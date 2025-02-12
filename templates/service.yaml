@@ -4,7 +4,7 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ $microservice.name }}-{{ .name }}-service
+  name: {{ $microservice.name | lower }}-{{ .name }}-service
   namespace: {{ $.Values.global.namespace }}
   {{- with .annotations }}
   annotations:
@@ -18,7 +18,7 @@ spec:
       protocol: {{ .protocol | default "TCP" }}
       name: {{ .name }}
   selector:
-    app.kubernetes.io/name: {{ $microservice.name }}-server
+    app.kubernetes.io/name: {{ $microservice.name | lower }}-server
   {{- end }}
 ---
 {{- end }}
