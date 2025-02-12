@@ -37,7 +37,7 @@ spec:
         - name: {{ $microservice.name }}
           image: "{{ $.Values.global.ecr }}/cronjob:{{ .imageTag }}"
           imagePullPolicy: Always
-          command: ["./{{ $microservice.name }}"]
+          command: ["./cronJob"]
         {{- if ne $microservice.name "game-admin" }}
           args:
             - "-a"
