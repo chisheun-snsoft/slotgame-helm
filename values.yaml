@@ -15,7 +15,8 @@ microservices:
     requests:
       cpu: 200m
       memory: 100Mi
-
+    readinessProbe: {}
+    livenessProbe: {}
     services:
       # default values (type: ClusterIP, protocol: TCP, targetPort = Port)
       - name: pprof
@@ -46,7 +47,8 @@ microservices:
     requests:
       cpu: 200m
       memory: 100Mi
-
+    readinessProbe: {}
+    livenessProbe: {}
     services:
       # default values (type: ClusterIP, protocol: TCP, targetPort = Port)
       - name: tcp
@@ -63,7 +65,8 @@ microservices:
     requests:
       cpu: 200m
       memory: 100Mi
-
+    readinessProbe: {}
+    livenessProbe: {}
     services:
       # default values (type: ClusterIP, protocol: TCP, targetPort = Port)
       - name: pprof
@@ -82,7 +85,8 @@ microservices:
     requests:
       cpu: 200m
       memory: 100Mi
-
+    readinessProbe: {}
+    livenessProbe: {}
     services:
       # default values (type: ClusterIP, protocol: TCP, targetPort = Port)
       - name: pprof
@@ -101,7 +105,8 @@ microservices:
     requests:
       cpu: 200m
       memory: 100Mi
-
+    readinessProbe: {}
+    livenessProbe: {}
     services:
       # default values (type: ClusterIP, protocol: TCP, targetPort = Port)
       - name: grpc
@@ -123,7 +128,8 @@ microservices:
     requests:
       cpu: 2
       memory: 200Mi
-
+    readinessProbe: {}
+    livenessProbe: {}
     services:
       # default values (type: ClusterIP, protocol: TCP, targetPort = Port)
       - name: grpc
@@ -140,7 +146,8 @@ microservices:
     requests:
       cpu: 200m
       memory: 100Mi
-
+    readinessProbe: {}
+    livenessProbe: {}
     services:
       # default values (type: ClusterIP, protocol: TCP, targetPort = Port)
       - name: grpc
