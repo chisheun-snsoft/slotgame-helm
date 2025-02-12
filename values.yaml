@@ -156,16 +156,16 @@ microservices:
     ingress:
       enabled: false
 
-argocd:
-  - name: pulsar-test
-    namespace: pulsar-test
-    repoUrl: https://github.com/apache/pulsar-helm-chart.git
-    targetRevision: master
-    path: charts/pulsar
-    helm: 
-      valueFiles:
-        - values.yaml
-      values: |
+# argocd:
+#   - name: pulsar-test
+#     namespace: pulsar-test
+#     repoUrl: https://github.com/apache/pulsar-helm-chart.git
+#     targetRevision: master
+#     path: charts/pulsar
+#     helm: 
+#       valueFiles:
+#         - values.yaml
+#       values: |
         namespace: pulsar
         namespaceCreate: true
         
