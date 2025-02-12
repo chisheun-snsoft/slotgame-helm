@@ -58,11 +58,11 @@ spec:
                   key: VAULT_TOKEN
         {{- end }}
         {{- range .services }}
+        {{- if contains "grpc" .name }}
           ports:
             - containerPort: {{ .port }}
               name: {{ .name }}
               protocol: {{ .name }}
-        {{- if contains "grpc" .name }}
           {{- if or (eq $microservice.name "aggregation") (eq $microservice.name "pressurenode") (eq $microservice.name "judan") }}
           livenessProbe: 
             exec:
@@ -127,6 +127,9 @@ spec:
             timeoutSeconds: {{ $microservice.livenessProbe.timeoutSeconds | default 3 }}
           {{- end }}
         {{- else }}
+          ports:
+            - containerPort: {{ .port }}
+              name: {{ .name }}
           {{- if eq $microservice.name "game-admin" }}
           readinessProbe:
             httpGet:
