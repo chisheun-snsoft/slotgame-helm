@@ -44,15 +44,20 @@ spec:
         {{- if ne $microservice.name "game-admin" }}
           command: ["./{{ $microservice.name }}"]
           args:
+          {{- if eq $microservice.name "slot" }}
+            - crystal
             - "-a"
             - "http://vault-ui.vault.svc.cluster.local/"
             - "-t"
             - "hvs.k1C8Swd9pGr7rrZzUanAGhaV"
             - "-p"
-          {{- if eq $microservice.name "slot" }}
-            - crystal
             - "v1/spin_master/data/{{ $microservice.name }}/slot001"
           {{- else }}
+            - "-a"
+            - "http://vault-ui.vault.svc.cluster.local/"
+            - "-t"
+            - "hvs.k1C8Swd9pGr7rrZzUanAGhaV"
+            - "-p"
             - "v1/spin_master/data/{{ $microservice.name }}"
           {{- end }}
         {{- end }}
