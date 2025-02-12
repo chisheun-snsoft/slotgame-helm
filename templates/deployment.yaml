@@ -41,8 +41,8 @@ spec:
           image: "{{ $.Values.global.ecr }}/dev-{{ $microservice.name | lower }}:{{ .imageTag }}"
           {{- end }}
           imagePullPolicy: Always
-          command: ["./{{ $microservice.name }}"]
         {{- if ne $microservice.name "game-admin" }}
+          command: ["./{{ $microservice.name }}"]
           args:
             - "-a"
             - "http://vault-ui.vault.svc.cluster.local/"
