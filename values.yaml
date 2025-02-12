@@ -1,6 +1,9 @@
 global:
   namespace: slotgame-test
   ecr: 235494821046.dkr.ecr.ap-southeast-1.amazonaws.com
+  secret:
+    token: 0be80d296d77f5aa39217b0a6223da086d46bc80a70facf0766ef9438eaf1759
+
 microservices:
   - name: aggregation
     replicas: 1
