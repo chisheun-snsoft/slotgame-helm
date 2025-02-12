@@ -35,7 +35,7 @@ spec:
         role: karpenter
       containers:
         - name: {{ $microservice.name | lower }}
-          {{- if contains $microservice.name "cron" }}
+          {{- if eq $microservice.name "cronJob" }}
           image: "{{ $.Values.global.ecr }}/{{ $microservice.name | lower }}:{{ .imageTag }}"
           {{- else }}
           image: "{{ $.Values.global.ecr }}/dev-{{ $microservice.name | lower }}:{{ .imageTag }}"
