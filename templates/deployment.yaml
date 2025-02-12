@@ -180,4 +180,5 @@ spec:
       restartPolicy: Always
     {{- end }}
       terminationGracePeriodSeconds: 15
+---
 {{- end }}

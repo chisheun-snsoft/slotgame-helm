@@ -22,4 +22,5 @@ spec:
             port:
               number: {{ .ingress.port }}
 {{- end }}
+---
 {{- end }}
