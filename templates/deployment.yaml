@@ -37,26 +37,20 @@ spec:
         - name: {{ $microservice.name }}
           image: "{{ $.Values.global.ecr }}/dev-{{ $microservice.name }}:{{ .imageTag }}"
           imagePullPolicy: Always
-          # command: ["./{{ $microservice.name }}"]
-        # {{- if ne $microservice.name "game-admin" }}
-          # args:
-          #   - "-a"
-          #   - "http://vault-ui.vault.svc.cluster.local/"
-          #   - "-t"
-          #   - "$(VAULT_TOKEN)"
-          #   - "-p"
-          # {{- if eq $microservice.name "slot" }}
-          #   - "v1/spin_master/data/{{ $microservice.name }}/slot001"
-          # {{- else }}
-          #   - "v1/spin_master/data/{{ $microservice.name }}"
-          # {{- end }}
-        #   env:
-        #     - name: VAULT_TOKEN
-        #       valueFrom:
-        #         secretKeyRef:
-        #           name: vault-token
-        #           key: VAULT_TOKEN
-        # {{- end }}
+          command: ["./{{ $microservice.name }}"]
+        {{- if ne $microservice.name "game-admin" }}
+          args:
+            - "-a"
+            - "http://vault-ui.vault.svc.cluster.local/"
+            - "-t"
+            - "hvs.k1C8Swd9pGr7rrZzUanAGhaV"
+            - "-p"
+          {{- if eq $microservice.name "slot" }}
+            - "v1/spin_master/data/{{ $microservice.name }}/slot001"
+          {{- else }}
+            - "v1/spin_master/data/{{ $microservice.name }}"
+          {{- end }}
+        {{- end }}
         {{- range .services }}
         {{- if contains "grpc" .name }}
           ports:
