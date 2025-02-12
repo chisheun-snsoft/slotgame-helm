@@ -20,8 +20,8 @@ microservices:
     livenessProbe: {}
     services:
       # default values (type: ClusterIP, protocol: TCP, targetPort = Port)
-      # - name: pprof
-      #   port: 6060
+      - name: pprof
+        port: 6060
       - name: grpc
         port: 18020
     ingress:
