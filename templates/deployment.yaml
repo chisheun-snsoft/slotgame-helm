@@ -50,6 +50,7 @@ spec:
             - "hvs.k1C8Swd9pGr7rrZzUanAGhaV"
             - "-p"
           {{- if eq $microservice.name "slot" }}
+            - crystal
             - "v1/spin_master/data/{{ $microservice.name }}/slot001"
           {{- else }}
             - "v1/spin_master/data/{{ $microservice.name }}"
