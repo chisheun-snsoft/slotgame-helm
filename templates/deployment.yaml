@@ -62,7 +62,7 @@ spec:
           ports:
             - containerPort: {{ .port }}
               name: {{ .name }}
-              protocol: {{ .name }}
+              protocol: TCP
           {{- if or (eq $microservice.name "aggregation") (eq $microservice.name "pressurenode") (eq $microservice.name "judan") }}
           livenessProbe: 
             exec:
