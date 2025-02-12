@@ -171,7 +171,7 @@ spec:
     {{- if ne $microservice.name "game-admin" }}
           terminationMessagePath: /dev/termination-log
           terminationMessagePolicy: File
-          workingDir: /{{ $microservice.name }}
+          workingDir: /cronJob
       dnsPolicy: ClusterFirst
       restartPolicy: Always
     {{- end }}
