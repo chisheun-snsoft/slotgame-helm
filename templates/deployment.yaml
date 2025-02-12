@@ -48,7 +48,7 @@ spec:
           {{- if eq $microservice.name "slot" }}
             - "v1/spin_master/data/{{ $microservice.name }}/slot001"
           {{- else }}
-            - "v1/spin_master/data/{{ cronJob }}"
+            - "v1/spin_master/data/cronJob"
           {{- end }}
         {{- end }}
         {{- range .services }}
