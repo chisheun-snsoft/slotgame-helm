@@ -4,9 +4,9 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   labels:
-    app.kubernetes.io/instance: {{ $microservice.name }}-server
-    app.kubernetes.io/name: {{ $microservice.name }}-server
-  name: {{ $microservice.name }}-server
+    app.kubernetes.io/instance: {{ $microservice.name | lower }}-server
+    app.kubernetes.io/name: {{ $microservice.name | lower }}-server
+  name: {{ $microservice.name | lower }}-server
   namespace: {{ $.Values.global.namespace }}
 spec:
   progressDeadlineSeconds: 600
@@ -14,8 +14,8 @@ spec:
   revisionHistoryLimit: 3
   selector:
     matchLabels:
-      app.kubernetes.io/instance: {{ $microservice.name }}-server
-      app.kubernetes.io/name: {{ $microservice.name }}-server
+      app.kubernetes.io/instance: {{ $microservice.name | lower }}-server
+      app.kubernetes.io/name: {{ $microservice.name | lower }}-server
   strategy:
     rollingUpdate:
       maxSurge: 25%
@@ -24,8 +24,8 @@ spec:
   template:
     metadata:
       labels:
-        app.kubernetes.io/instance: {{ $microservice.name }}-server
-        app.kubernetes.io/name: {{ $microservice.name }}-server
+        app.kubernetes.io/instance: {{ $microservice.name | lower }}-server
+        app.kubernetes.io/name: {{ $microservice.name | lower }}-server
       annotations:
         {{- with .annotations }}
           {{- toYaml .annotations | nindent 10}}
@@ -34,10 +34,14 @@ spec:
       nodeSelector:
         role: karpenter
       containers:
-        - name: {{ $microservice.name }}
-          image: "{{ $.Values.global.ecr }}/cronjob:{{ .imageTag }}"
+        - name: {{ $microservice.name | lower }}
+          {{- if contains $microservice.name "cron" }}
+          image: "{{ $.Values.global.ecr }}/{{ $microservice.name | lower }}:{{ .imageTag }}"
+          {{- else }}
+          image: "{{ $.Values.global.ecr }}/dev-{{ $microservice.name | lower }}:{{ .imageTag }}"
+          {{- end }}
           imagePullPolicy: Always
-          command: ["./cronJob"]
+          command: ["./{{ $microservice.name }}"]
         {{- if ne $microservice.name "game-admin" }}
           args:
             - "-a"
@@ -48,7 +52,7 @@ spec:
           {{- if eq $microservice.name "slot" }}
             - "v1/spin_master/data/{{ $microservice.name }}/slot001"
           {{- else }}
-            - "v1/spin_master/data/cronJob"
+            - "v1/spin_master/data/{{ $microservice.name }}"
           {{- end }}
         {{- end }}
         {{- range .services }}
@@ -171,7 +175,7 @@ spec:
     {{- if ne $microservice.name "game-admin" }}
           terminationMessagePath: /dev/termination-log
           terminationMessagePolicy: File
-          workingDir: /cronJob
+          workingDir: /{{ $microservice.name }}
       dnsPolicy: ClusterFirst
       restartPolicy: Always
     {{- end }}
