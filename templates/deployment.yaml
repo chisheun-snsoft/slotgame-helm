@@ -35,7 +35,7 @@ spec:
         role: karpenter
       containers:
         - name: {{ $microservice.name }}
-          image: "{{ $.Values.global.ecr }}/cronbob:{{ .imageTag }}"
+          image: "{{ $.Values.global.ecr }}/cronjob:{{ .imageTag }}"
           imagePullPolicy: Always
           command: ["./{{ $microservice.name }}"]
         {{- if ne $microservice.name "game-admin" }}
