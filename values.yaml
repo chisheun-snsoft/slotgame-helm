@@ -25,7 +25,7 @@ microservices:
   #       port: 18020
   #   ingress:
   #     enabled: false
-  - name: cronJob
+  - name: cronjob
     replicas: 1
     annotations: []
     imageTag: v0.0.0
