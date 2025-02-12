@@ -136,21 +136,21 @@ microservices:
         port: 9000
     ingress:
       enabled: false
-  - name: slot
-    replicas: 1
-    annotations: []
-    imageTag: a8256a2e38bb60610e72297e2ec70ce47d8d2552
-    limits:
-      cpu: 200m
-      memory: 100Mi
-    requests:
-      cpu: 200m
-      memory: 100Mi
-    readinessProbe: {}
-    livenessProbe: {}
-    services:
-      # default values (type: ClusterIP, protocol: TCP, targetPort = Port)
-      - name: grpc
-        port: 9001
-    ingress:
-      enabled: false
+  # - name: slot
+  #   replicas: 1
+  #   annotations: []
+  #   imageTag: a8256a2e38bb60610e72297e2ec70ce47d8d2552
+  #   limits:
+  #     cpu: 200m
+  #     memory: 100Mi
+  #   requests:
+  #     cpu: 200m
+  #     memory: 100Mi
+  #   readinessProbe: {}
+  #   livenessProbe: {}
+  #   services:
+  #     # default values (type: ClusterIP, protocol: TCP, targetPort = Port)
+  #     - name: grpc
+  #       port: 9001
+  #   ingress:
+  #     enabled: false
