@@ -1,0 +1,153 @@
+global:
+  namespace: slotgame-qat
+  ecr: 235494821046.dkr.ecr.ap-southeast-1.amazonaws.com
+microservices:
+  - name: aggregation
+    replicas: 1
+    annotations: []
+    imageTag: v1.0.62
+    limits:
+      cpu: 200m
+      memory: 100Mi
+    requests:
+      cpu: 200m
+      memory: 100Mi
+    readinessProbe: {}
+    livenessProbe: {}
+    services:
+      # default values (type: ClusterIP, protocol: TCP, targetPort = Port)
+      - name: pprof
+        port: 6060
+      - name: grpc
+        port: 18020
+    ingress:
+      enabled: false
+  - name: cronJob
+    replicas: 1
+    annotations: []
+    imageTag: v0.0.0
+    limits:
+      cpu: 500m
+      memory: 500Mi
+    requests:
+      cpu: 500m
+      memory: 500Mi
+    ingress:
+      enabled: false
+  - name: game-admin
+    replicas: 1
+    annotations: []
+    imageTag: v1.0.21
+    limits:
+      cpu: 200m
+      memory: 100Mi
+    requests:
+      cpu: 200m
+      memory: 100Mi
+    readinessProbe: {}
+    livenessProbe: {}
+    services:
+      # default values (type: ClusterIP, protocol: TCP, targetPort = Port)
+      - name: tcp
+        port: 80
+    ingress:
+      enabled: false
+  - name: gateway
+    replicas: 1
+    annotations: []
+    imageTag: v1.0.62
+    limits:
+      cpu: 200m
+      memory: 100Mi
+    requests:
+      cpu: 200m
+      memory: 100Mi
+    readinessProbe: {}
+    livenessProbe: {}
+    services:
+      # default values (type: ClusterIP, protocol: TCP, targetPort = Port)
+      - name: pprof
+        port: 6060
+      - name: grpc
+        port: 8845
+    ingress:
+      enabled: false
+  - name: judan
+    replicas: 3
+    annotations: []
+    imageTag: v1.0.62
+    limits:
+      cpu: 200m
+      memory: 100Mi
+    requests:
+      cpu: 200m
+      memory: 100Mi
+    readinessProbe: {}
+    livenessProbe: {}
+    services:
+      # default values (type: ClusterIP, protocol: TCP, targetPort = Port)
+      - name: pprof
+        port: 6060
+      - name: grpc
+        port: 8090
+    ingress:
+      enabled: false
+  - name: restgateway
+    replicas: 1
+    annotations: []
+    imageTag: v1.0.62
+    limits:
+      cpu: 200m
+      memory: 100Mi
+    requests:
+      cpu: 200m
+      memory: 100Mi
+    readinessProbe: {}
+    livenessProbe: {}
+    services:
+      # default values (type: ClusterIP, protocol: TCP, targetPort = Port)
+      - name: grpc
+        port: 8080
+    ingress:
+      enabled: true
+      annotations:
+        alb.ingress.kubernetes.io/scheme: internet-facing
+        alb.ingress.kubernetes.io/target-type: ip
+        alb.ingress.kubernetes.io/backend-protocol: HTTP
+      port: 8080
+  - name: rtpmanager
+    replicas: 1
+    annotations: []
+    imageTag: v1.0.62
+    limits:
+      cpu: 2
+      memory: 200Mi
+    requests:
+      cpu: 2
+      memory: 200Mi
+    readinessProbe: {}
+    livenessProbe: {}
+    services:
+      # default values (type: ClusterIP, protocol: TCP, targetPort = Port)
+      - name: grpc
+        port: 9000
+    ingress:
+      enabled: false
+  - name: slot
+    replicas: 1
+    annotations: []
+    imageTag: v1.0.62
+    limits:
+      cpu: 200m
+      memory: 100Mi
+    requests:
+      cpu: 200m
+      memory: 100Mi
+    readinessProbe: {}
+    livenessProbe: {}
+    services:
+      # default values (type: ClusterIP, protocol: TCP, targetPort = Port)
+      - name: grpc
+        port: 9001
+    ingress:
+      enabled: false

@@ -1,0 +1,25 @@
+{{- range .Values.microservices }}
+{{- if .ingress.enabled }}
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  namespace: {{ $.Values.global.namespace }}
+  name: {{ .name }}-service-ingress
+  {{- with .ingress.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  ingressClassName: {{ .ingress.ingressClassName | default "alb" }}
+  rules:
+  - http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: {{ .name }}-service
+            port:
+              number: {{ .ingress.port }}
+{{- end }}
+{{- end }}

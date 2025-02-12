@@ -1,0 +1,182 @@
+{{- range .Values.microservices }}
+  {{- $microservice := . }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app.kubernetes.io/instance: {{ $microservice.name }}-server
+    app.kubernetes.io/name: {{ $microservice.name }}-server
+  name: {{ $microservice.name }}-server
+  namespace: {{ $.Values.global.namespace }}
+spec:
+  progressDeadlineSeconds: 600
+  replicas: {{ .replica }}
+  revisionHistoryLimit: 3
+  selector:
+    matchLabels:
+      app.kubernetes.io/instance: {{ $microservice.name }}-server
+      app.kubernetes.io/name: {{ $microservice.name }}-server
+  strategy:
+    rollingUpdate:
+      maxSurge: 25%
+      maxUnavailable: 25%
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/instance: {{ $microservice.name }}-server
+        app.kubernetes.io/name: {{ $microservice.name }}-server
+      annotations:
+        {{- with .annotations }}
+          {{- toYaml .annotations | nindent 10}}
+        {{- end }}
+    spec:
+      nodeSelector:
+        role: karpenter
+      containers:
+        - name: {{ $microservice.name }}
+          image: "{{ $.Values.global.ecr }}/{{ $microservice.name }}:{{ .imageTag }}"
+          imagePullPolicy: Always
+          command: ["./{{ $microservice.name }}"]
+        {{- if ne $microservice.name "game-admin" }}
+          args:
+            - "-a"
+            - "http://vault-ui.vault.svc.cluster.local/"
+            - "-t"
+            - "$(VAULT_TOKEN)"
+            - "-p"
+          {{- if eq $microservice.name "slot" }}
+            - "v1/spin_master/data/{{ $microservice.name }}/slot001"
+          {{- else }}
+            - "v1/spin_master/data/{{ $microservice.name }}"
+          {{- end }}
+          env:
+            - name: VAULT_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: vault-token
+                  key: VAULT_TOKEN
+        {{- end }}
+        {{- range .services }}
+          ports:
+            - containerPort: {{ .port }}
+              name: {{ .name }}
+              protocol: {{ .name }}
+        {{- if contains "grpc" .name }}
+          {{- if or (eq $microservice.name "aggregation") (eq $microservice.name "pressurenode") (eq $microservice.name "judan") }}
+          livenessProbe: 
+            exec:
+              command:
+                - /bin/grpc_health_probe
+                - -addr=:{{ .port }}
+                - -rpc-timeout=5s
+            initialDelaySeconds: {{ $microservice.livenessProbe.initialDelaySeconds | default 10 }}
+          readinessProbe: 
+            exec:
+              command:
+                - /bin/grpc_health_probe
+                - -addr=:{{ .port }}
+                - -rpc-timeout=5s
+            initialDelaySeconds: {{ $microservice.readinessProbe.initialDelaySeconds | default 10 }}
+          {{- else if or (eq $microservice.name "rtpmanager") (eq $microservice.name "slot")}}
+          readinessProbe:
+            grpc:
+              port: {{ .port }}
+            initialDelaySeconds: {{ $microservice.readinessProbe.initialDelaySeconds | default 10 }}
+            periodSeconds: {{ $microservice.readinessProbe.periodSeconds | default 5 }}
+            timeoutSeconds: {{ $microservice.readinessProbe.timeoutSeconds | default 30 }}
+          livenessProbe:
+            grpc:
+              port: {{ .port }}
+            initialDelaySeconds: {{ $microservice.livenessProbe.initialDelaySeconds | default 10 }}
+            timeoutSeconds: {{ $microservice.livenessProbe.initialDelaySeconds | default 5 }}
+            periodSeconds: {{ $microservice.livenessProbe.periodSeconds | default 5 }}
+          {{- else if eq $microservice.name "pressuremaster" }}
+          readinessProbe:
+            httpGet:
+              path: /
+              port: {{ .port }}
+            initialDelaySeconds: {{ $microservice.readinessProbe.initialDelaySeconds | default 10}}
+            periodSeconds: {{ $microservice.readinessProbe.periodSeconds | default 5 }}
+            timeoutSeconds: {{ $microservice.readinessProbe.timeoutSeconds | default 30 }}
+          livenessProbe:
+            httpGet:
+              path: /
+              port: {{ .port }}
+            initialDelaySeconds: {{ $microservice.livenessProbe.initialDelaySeconds | default 10}}
+            timeoutSeconds: {{ $microservice.livenessProbe.periodSeconds | default 5 }}
+            periodSeconds: {{ $microservice.livenessProbe.timeoutSeconds | default 5 }}
+          {{- else if eq $microservice.name "restgateway" }}
+          readinessProbe: #http
+            httpGet:
+              path: /ping
+              port: {{ .port }}
+            initialDelaySeconds: {{ $microservice.readinessProbe.initialDelaySeconds | default 30 }}
+            periodSeconds: {{ $microservice.readinessProbe.periodSeconds | default 30 }}
+            successThreshold: {{ $microservice.readinessProbe.successThreshold | default 1 }}
+            failureThreshold: {{ $microservice.readinessProbe.failureThreshold | default 3 }}
+            timeoutSeconds: {{ $microservice.readinessProbe.timeoutSeconds | default 10 }}
+          livenessProbe: #http
+            httpGet:
+              path: /ping
+              port: {{ .port }}
+            initialDelaySeconds: {{ $microservice.livenessProbe.initialDelaySeconds | default 30 }}
+            periodSeconds: {{ $microservice.livenessProbe.periodSeconds | default 30 }}
+            successThreshold: {{ $microservice.livenessProbe.successThreshold | default 1 }}
+            failureThreshold: {{ $microservice.livenessProbe.failureThreshold | default 3 }}
+            timeoutSeconds: {{ $microservice.livenessProbe.timeoutSeconds | default 3 }}
+          {{- end }}
+        {{- else }}
+          {{- if eq $microservice.name "game-admin" }}
+          readinessProbe:
+            httpGet:
+              path: /
+              port: {{ .port }}
+            initialDelaySeconds: {{ $microservice.readinessProbe.initialDelaySeconds | default 5 }}
+            periodSeconds: {{ $microservice.readinessProbe.periodSeconds | default 10 }}
+            failureThreshold: {{ $microservice.readinessProbe.failureThreshold | default 3 }}
+          livenessProbe:
+            httpGet:
+              path: /
+              port: {{ .port }}
+            initialDelaySeconds: {{ $microservice.livenessProbe.initialDelaySeconds | default 20 }}
+            periodSeconds: {{ $microservice.livenessProbe.periodSeconds | default 20 }}
+            failureThreshold: {{ $microservice.livenessProbe.failureThreshold | default 3 }}
+          {{- else if eq $microservice.name "gateway" }}
+          readinessProbe: #http
+            httpGet:
+              path: /ping
+              port: 8845
+            initialDelaySeconds: {{ $microservice.readinessProbe.initialDelaySeconds | default 10 }}
+            periodSeconds: {{ $microservice.readinessProbe.periodSeconds | default 30 }}
+            successThreshold: {{ $microservice.readinessProbe.successThreshold | default 1 }}
+            failureThreshold: {{ $microservice.readinessProbe.failureThreshold | default 3 }}
+            timeoutSeconds: {{ $microservice.readinessProbe.timeoutSeconds | default 10 }}
+          livenessProbe: #http
+            httpGet:
+              path: /ping
+              port: 8845
+            initialDelaySeconds: {{ $microservice.livenessProbe.initialDelaySeconds | default 10 }}
+            periodSeconds: {{ $microservice.livenessProbe.periodSeconds | default 30 }}
+            successThreshold: {{ $microservice.livenessProbe.successThreshold | default 1 }}
+            failureThreshold: {{ $microservice.livenessProbe.failureThreshold | default 3 }}
+            timeoutSeconds: {{ $microservice.livenessProbe.timeoutSeconds | default 3 }}
+          {{- end }}
+        {{- end }}
+        {{- end }}
+          resources:
+            limits:
+              cpu: {{ .limits.cpu | default 1 | quote }}
+              memory: {{ .limits.memory | default 1 | quote }}
+            requests:
+              cpu: {{ .requests.cpu | default 1 | quote }}
+              memory: {{ .requests.memory | default 1 | quote }}
+    {{- if ne $microservice.name "game-admin" }}
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+          workingDir: /{{ $microservice.name }}
+      dnsPolicy: ClusterFirst
+      restartPolicy: Always
+    {{- end }}
+      terminationGracePeriodSeconds: 15
+{{- end }}

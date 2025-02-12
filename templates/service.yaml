@@ -1,0 +1,23 @@
+{{- range .Values.microservices }}
+  {{- $microservice := . }}  # Store microservice reference
+  {{- range .services }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ $microservice.name }}-{{ .name }}-service
+  namespace: {{ $.Values.global.namespace }}
+  {{- with .annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  type: "{{ .type | default "ClusterIP" }}"
+  ports:
+    - port: {{ .port }}
+      targetPort: {{ .targetPort | default .port }}
+      protocol: {{ .protocol | default "TCP" }}
+      name: {{ .name }}
+  selector:
+    app.kubernetes.io/name: {{ $microservice.name }}-server
+  {{- end }}
+{{- end }}
