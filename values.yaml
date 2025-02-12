@@ -1,5 +1,5 @@
 global:
-  namespace: slotgame-qat
+  namespace: slotgame-test
   ecr: 235494821046.dkr.ecr.ap-southeast-1.amazonaws.com
 microservices:
   - name: aggregation
