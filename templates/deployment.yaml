@@ -1,11 +1,10 @@
 {{- range .Values.microservices }}
   {{- $microservice := . }}
+{{- $labels := dict "app.kubernetes.io/instance" (printf "%s-server" $microservice.name | lower) "app.kubernetes.io/name" (printf "%s-server" $microservice.name | lower) }}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  labels:
-    app.kubernetes.io/instance: {{ $microservice.name | lower }}-server
-    app.kubernetes.io/name: {{ $microservice.name | lower }}-server
+  labels: {{ $labels | toYaml | nindent 4 }}
   name: {{ $microservice.name | lower }}-server
   namespace: {{ $.Values.global.namespace }}
 spec:
@@ -13,9 +12,7 @@ spec:
   replicas: {{ .replica }}
   revisionHistoryLimit: 3
   selector:
-    matchLabels:
-      app.kubernetes.io/instance: {{ $microservice.name | lower }}-server
-      app.kubernetes.io/name: {{ $microservice.name | lower }}-server
+    matchLabels: {{ $labels | toYaml | nindent 6 }}
   strategy:
     rollingUpdate:
       maxSurge: 25%
@@ -35,29 +32,17 @@ spec:
         role: karpenter
       containers:
         - name: {{ $microservice.name | lower }}
-          {{- if eq $microservice.name "cronJob" }}
-          image: "{{ $.Values.global.ecr }}/{{ $microservice.name | lower }}:{{ .imageTag }}"
-          {{- else }}
-          image: "{{ $.Values.global.ecr }}/dev-{{ $microservice.name | lower }}:{{ .imageTag }}"
-          {{- end }}
+          image: "{{ $.Values.global.ecr }}/{{ if eq $microservice.name "cronJob" }}{{ $microservice.name | lower }}{{ else }}dev-{{ $microservice.name | lower }}{{ end }}:{{ .imageTag }}"
           imagePullPolicy: Always
         {{- if ne $microservice.name "game-admin" }}
           command: ["./{{ $microservice.name }}"]
           args:
           {{- if eq $microservice.name "slot" }}
             - crystal
-            - "-a"
-            - "http://vault-ui.vault.svc.cluster.local/"
-            - "-t"
-            - "hvs.k1C8Swd9pGr7rrZzUanAGhaV"
-            - "-p"
+            {{- include "containerCommand" . | nindent 12 }}
             - "v1/spin_master/data/{{ $microservice.name }}/slot001"
           {{- else }}
-            - "-a"
-            - "http://vault-ui.vault.svc.cluster.local/"
-            - "-t"
-            - "hvs.k1C8Swd9pGr7rrZzUanAGhaV"
-            - "-p"
+            {{- include "containerCommand" . | nindent 12 }}
             - "v1/spin_master/data/{{ $microservice.name }}"
           {{- end }}
         {{- end }}
@@ -171,13 +156,7 @@ spec:
           {{- end }}
         {{- end }}
         {{- end }}
-          resources:
-            limits:
-              cpu: {{ .limits.cpu | default 1 | quote }}
-              memory: {{ .limits.memory | default 1 | quote }}
-            requests:
-              cpu: {{ .requests.cpu | default 1 | quote }}
-              memory: {{ .requests.memory | default 1 | quote }}
+          {{- include "resourceRequest" . | nindent 10 }}
     {{- if ne $microservice.name "game-admin" }}
           terminationMessagePath: /dev/termination-log
           terminationMessagePolicy: File

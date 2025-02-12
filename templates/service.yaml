@@ -19,6 +19,6 @@ spec:
       name: {{ .name }}
   selector:
     app.kubernetes.io/name: {{ $microservice.name | lower }}-server
-  {{- end }}
 ---
+  {{- end }}
 {{- end }}
