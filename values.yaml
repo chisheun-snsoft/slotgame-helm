@@ -8,7 +8,7 @@ microservices:
   - name: aggregation
     replicas: 1
     annotations: []
-    imageTag: v1.0.62
+    imageTag: 3f32dc23e637a67577deccea4bc55e7700bdf38a
     limits:
       cpu: 200m
       memory: 100Mi
@@ -40,7 +40,7 @@ microservices:
   - name: game-admin
     replicas: 1
     annotations: []
-    imageTag: v1.0.21
+    imageTag: 6ad226b3d026fc5880c609ce1cc48bf65233743a
     limits:
       cpu: 200m
       memory: 100Mi
@@ -58,7 +58,7 @@ microservices:
   - name: gateway
     replicas: 1
     annotations: []
-    imageTag: v1.0.62
+    imageTag: 7de3ab973c27e8f9e4c55f684194960616bd1123
     limits:
       cpu: 200m
       memory: 100Mi
@@ -78,7 +78,7 @@ microservices:
   - name: judan
     replicas: 3
     annotations: []
-    imageTag: v1.0.62
+    imageTag: 6b7265acfe69777d7f047e927eb904d6494e7ebc
     limits:
       cpu: 200m
       memory: 100Mi
@@ -98,7 +98,7 @@ microservices:
   - name: restgateway
     replicas: 1
     annotations: []
-    imageTag: v1.0.62
+    imageTag: bc3b62c4d81c58c6a41495b2a1c12c110c8fc3d4
     limits:
       cpu: 200m
       memory: 100Mi
@@ -121,7 +121,7 @@ microservices:
   - name: rtpmanager
     replicas: 1
     annotations: []
-    imageTag: v1.0.62
+    imageTag: f30f1efe52b70f465cb037cad3e86f6a201df432
     limits:
       cpu: 2
       memory: 200Mi
@@ -139,7 +139,7 @@ microservices:
   - name: slot
     replicas: 1
     annotations: []
-    imageTag: v1.0.62
+    imageTag: a8256a2e38bb60610e72297e2ec70ce47d8d2552
     limits:
       cpu: 200m
       memory: 100Mi
