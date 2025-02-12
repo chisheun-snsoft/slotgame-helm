@@ -155,3 +155,141 @@ microservices:
         port: 9001
     ingress:
       enabled: false
+
+argocd:
+  - name: pulsar-test
+    namespace: pulsar-test
+    repoUrl: https://github.com/apache/pulsar-helm-chart.git
+    targetRevision: master
+    path: charts/pulsar
+    helm: 
+      valueFiles:
+        - values.yaml
+      values: |
+        namespace: pulsar
+        namespaceCreate: true
+        
+        # Global nodeSelector for all components
+        nodeSelector:
+          role: pulsar
+
+        # Zookeeper configuration
+        zookeeper:
+          nodeSelector:
+            role: pulsar
+          replicaCount: 3
+          resources:
+            requests:
+              memory: "512Mi"
+              cpu: "0.3"
+            limits:
+              memory: "1Gi"
+              cpu: "1"
+
+        # Bookkeeper configuration
+        bookkeeper:
+          nodeSelector:
+            role: pulsar
+          replicaCount: 3
+          resources:
+            requests:
+              memory: "512Mi"
+              cpu: "0.3"
+            limits:
+              memory: "1Gi"
+              cpu: "1"
+
+        # Broker configuration
+        broker:
+          nodeSelector:
+            role: pulsar
+          replicaCount: 3
+          resources:
+            requests:
+              memory: "512Mi"
+              cpu: "0.3"
+            limits:
+              memory: "1Gi"
+              cpu: "1"
+
+        # Proxy configuration
+        proxy:
+          nodeSelector:
+            role: pulsar
+          replicaCount: 3
+          resources:
+            requests:
+              memory: "512Mi"
+              cpu: "0.3"
+            limits:
+              memory: "1Gi"
+              cpu: "1"
+
+        # Function worker configuration
+        functions:
+          nodeSelector:
+            role: pulsar
+          resources:
+            requests:
+              memory: "512Mi"
+              cpu: "0.3"
+            limits:
+              memory: "1Gi"
+              cpu: "1"
+
+        # Monitoring stack configuration
+        kube-prometheus-stack:
+          enabled: false
+          prometheusOperator:
+            nodeSelector:
+              role: pulsar
+          prometheus:
+            enabled: false
+          grafana:
+            enabled: false # Disable Grafana
+          alertmanager:
+            enabled: false # Disable Alertmanager
+          prometheus-node-exporter:
+            enabled: false
+          nodeExporter:
+            enabled: false
+
+        # Standalone node-exporter disabled
+        prometheus-node-exporter:
+          enabled: false
+
+        # Additional components
+        autorecovery:
+          nodeSelector:
+            role: pulsar
+          resources:
+            requests:
+              memory: "256Mi"
+              cpu: "0.1"
+            limits:
+              memory: "512Mi"
+              cpu: "0.3"
+        
+        bastion:
+          nodeSelector:
+            role: pulsar
+          resources:
+            requests:
+              memory: "256Mi"
+              cpu: "0.1"
+            limits:
+              memory: "512Mi"
+              cpu: "0.3"
+
+        pulsar_manager:
+          nodeSelector:
+            role: pulsar
+          resources:
+            requests:
+              memory: "256Mi"
+              cpu: "0.1"
+            limits:
+              memory: "512Mi"
+              cpu: "0.3"
+
+# - name: apisix

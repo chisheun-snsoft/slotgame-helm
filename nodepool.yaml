@@ -1,0 +1,47 @@
+{{- if .Values.karpenter.enabled}}
+{{- range .Values.karpenter.nodepool }}
+apiVersion: karpenter.sh/v1beta1
+kind: NodePool
+metadata:
+  name: {{ .name }}-nodepool
+spec:
+  template:
+    metadata:
+      labels:
+        {{- toYaml .labels | nindent 8 }}
+    spec:
+      requirements:
+      {{- range .requirements }}
+        - key: {{ .key }}
+          operator: {{ .operator }}
+          values:
+          {{- range .values }}
+            - {{ . }}
+          {{- end }}
+      {{- end }}
+      nodeClassRef:
+        apiVersion: karpenter.k8s.aws/v1beta1
+        kind: EC2NodeClass
+        name: {{ .name }}-nodeclass
+  limits:
+    cpu: {{ .limits.cpu }}
+    {{ .cpuLimits }}
+  disruption:
+    consolidationPolicy: {{ .disruption.consolidationPolicy }}
+    expireAfter: {{ .disruption.expireAfter }}
+---
+apiVersion: karpenter.k8s.aws/v1beta1
+kind: EC2NodeClass
+metadata:
+  name: {{ .name }}-nodeclass
+spec:
+  amiFamily: {{ .nodeclass.amiFamily }}
+  role: "{{ .nodeclass.role }}"
+  subnetSelectorTerms:
+  - tags:
+      karpenter.sh/discovery:  "{{ .nodeclass.clusterName }}"
+  securityGroupSelectorTerms:
+  - tags:
+      karpenter.sh/discovery: "{{ .nodeclass.clusterName }}"
+{{- end }}
+{{- end }}
