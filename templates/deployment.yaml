@@ -34,7 +34,7 @@ spec:
         role: {{ .nodeSelector }}
       containers:
         - name: {{ $microservice.name | lower }}
-          image: "{{ $.Values.global.ecr }}/{{ if eq $microservice.name "cronJob" }}{{ $microservice.name | lower }}{{ else }}dev-{{ $microservice.name | lower }}{{ end }}:{{ .imageTag }}"
+          image: "{{ $.Values.global.ecr }}/{{ $microservice.name | lower }}:{{ .imageTag }}"
           imagePullPolicy: Always
           {{- if .commands.enabled }}
           commands: {{ .commands.command }}
