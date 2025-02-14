@@ -14,7 +14,7 @@ spec:
   maxReplicaCount: {{ .scaledObject.maxReplicaCount }}
   advanced:
     horizontalPodAutoscalerConfig:
-      name: {{ .name }}-hpa
+      name: {{ .name }}-server-hpa
       behavior:
         scaleUp:
           stabilizationWindowSeconds: {{ .scaledObject.scaleUp.stabilizationWindowSeconds }}
