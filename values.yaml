@@ -77,10 +77,6 @@ microservices:
       # method options: 1. httpGet 2. grpc 3. httpGet 4. exec 5. tcpSocket
       method: custom
       custom: []
-      # command:
-      #   - /bin/grpc_health_probe
-      #   - -addr=:5001
-      #   - -rpc-timeout=5s
       initialDelaySeconds: 10
     readinessProbe:
       enabled: true
@@ -112,7 +108,7 @@ microservices:
   - name: game-admin
     replicas: 1
     scaledObject:
-      enabled: enabled
+      enabled: true
       minReplicaCount: 1
       maxReplicaCount: 2
       scaleUp:
@@ -162,10 +158,6 @@ microservices:
       # method options: 1. httpGet 2. grpc 3. httpGet 4. exec 5. tcpSocket
       method: custom
       custom: []
-      # command:
-      #   - /bin/grpc_health_probe
-      #   - -addr=:5001
-      #   - -rpc-timeout=5s
       initialDelaySeconds: 10
     readinessProbe:
       enabled: true
@@ -263,10 +255,6 @@ microservices:
       # method options: 1. httpGet 2. grpc 3. httpGet 4. exec 5. tcpSocket
       method: custom
       custom: []
-      # command:
-      #   - /bin/grpc_health_probe
-      #   - -addr=:5001
-      #   - -rpc-timeout=5s
       initialDelaySeconds: 10
     readinessProbe:
       enabled: true
@@ -370,10 +358,6 @@ microservices:
       # method options: 1. httpGet 2. grpc 3. httpGet 4. exec 5. tcpSocket
       method: custom
       custom: []
-      # command:
-      #   - /bin/grpc_health_probe
-      #   - -addr=:5001
-      #   - -rpc-timeout=5s
       initialDelaySeconds: 10
     readinessProbe:
       enabled: true
@@ -472,10 +456,6 @@ microservices:
       # method options: 1. httpGet 2. grpc 3. httpGet 4. exec 5. tcpSocket
       method: custom
       custom: []
-      # command:
-      #   - /bin/grpc_health_probe
-      #   - -addr=:5001
-      #   - -rpc-timeout=5s
       initialDelaySeconds: 10
     readinessProbe:
       enabled: true
@@ -573,10 +553,6 @@ microservices:
       # method options: 1. httpGet 2. grpc 3. httpGet 4. exec 5. tcpSocket
       method: custom
       custom: []
-      # command:
-      #   - /bin/grpc_health_probe
-      #   - -addr=:5001
-      #   - -rpc-timeout=5s
       initialDelaySeconds: 10
     readinessProbe:
       enabled: true
@@ -605,7 +581,7 @@ microservices:
     replicas: 1
     imageTag: a8256a2e38bb60610e72297e2ec70ce47d8d2552
     scaledObject:
-      enabled: enabled
+      enabled: true
       minReplicaCount: 1
       maxReplicaCount: 2
       scaleUp:
@@ -673,10 +649,6 @@ microservices:
       # method options: 1. httpGet 2. grpc 3. httpGet 4. exec 5. tcpSocket
       method: custom
       custom: []
-      # command:
-      #   - /bin/grpc_health_probe
-      #   - -addr=:5001
-      #   - -rpc-timeout=5s
       initialDelaySeconds: 10
     readinessProbe:
       enabled: true
@@ -767,9 +739,6 @@ microservices:
   #     method: custom
   #     custom: []
   #     # command:
-  #     #   - /bin/grpc_health_probe
-  #     #   - -addr=:5001
-  #     #   - -rpc-timeout=5s
   #     initialDelaySeconds: 10
   #   readinessProbe:
   #     enabled: false
@@ -857,10 +826,6 @@ microservices:
   #     # method options: 1. httpGet 2. grpc 3. httpGet 4. exec 5. tcpSocket
   #     method: custom
   #     custom: []
-  #     # command:
-  #     #   - /bin/grpc_health_probe
-  #     #   - -addr=:5001
-  #     #   - -rpc-timeout=5s
   #     initialDelaySeconds: 10
   #   readinessProbe:
   #     enabled: true
