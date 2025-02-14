@@ -9,7 +9,7 @@ microservices:
   - name: aggregation
     replicas: 1
     scaledObject:
-      enabled: true
+      enabled: false
       minReplicaCount: 1
       maxReplicaCount: 2
       scaleUp:
@@ -108,7 +108,7 @@ microservices:
   - name: game-admin
     replicas: 1
     scaledObject:
-      enabled: true
+      enabled: false
       minReplicaCount: 1
       maxReplicaCount: 2
       scaleUp:
@@ -186,7 +186,7 @@ microservices:
   - name: gateway
     replicas: 1
     scaledObject:
-      enabled: true
+      enabled: false
       minReplicaCount: 1
       maxReplicaCount: 2
       scaleUp:
@@ -290,7 +290,7 @@ microservices:
   - name: judan
     replicas: 1
     scaledObject:
-      enabled: true
+      enabled: false
       minReplicaCount: 1
       maxReplicaCount: 2
       scaleUp:
@@ -388,7 +388,7 @@ microservices:
   - name: restgateway
     replicas: 1
     scaledObject:
-      enabled: true
+      enabled: false
       minReplicaCount: 1
       maxReplicaCount: 2
       scaleUp:
@@ -488,7 +488,7 @@ microservices:
   - name: rtpmanager
     replicas: 1
     scaledObject:
-      enabled: true
+      enabled: false
       minReplicaCount: 1
       maxReplicaCount: 2
       scaleUp:
@@ -581,7 +581,7 @@ microservices:
     replicas: 1
     imageTag: a8256a2e38bb60610e72297e2ec70ce47d8d2552
     scaledObject:
-      enabled: true
+      enabled: false
       minReplicaCount: 1
       maxReplicaCount: 2
       scaleUp:
