@@ -786,7 +786,7 @@ microservices:
 
   - name: slot
     replicas: 1
-    imageTag: a8256a2e38bb60610e72297e2ec70ce47d8d2552
+    imageTag: v1.0.64
     scaledObject:
       enabled: enabled
       minReplicaCount: 1
@@ -824,7 +824,7 @@ microservices:
     nodeSelector: karpenter
     commands:
       enabled : true
-      command: slot
+      command: ./slot
       args:
         - crystal
         - "-a"
