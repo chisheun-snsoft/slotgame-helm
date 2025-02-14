@@ -8,16 +8,97 @@ global:
 microservices:
   - name: aggregation
     replicas: 1
-    annotations: []
-    imageTag: 3f32dc23e637a67577deccea4bc55e7700bdf38a
+    scaledObject:
+      enabled: true
+      minReplicaCount: 1
+      maxReplicaCount: 2
+      scaleUp:
+        stabilizationWindowSeconds: 5 
+        selectPolicy: Max
+        pod:
+          podNumber: 10
+          seconds: 30
+        percent:
+          percentage: 100
+          seconds: 60
+        extraPolicies: []
+      scaleDown:
+        stabilizationWindowSeconds: 3600
+        selectPolicy: Min
+        pod:
+          podNumber: 4
+          seconds: 60
+        percent:
+          percentage: 50
+          seconds: 60
+        extraPolicies: []
+      cronOne:
+        start: 00 08 * * *
+        end: 00 19 * * *
+        desiredReplicas: 1
+      cronTwo: 
+        start: 00 19 * * *
+        end: 00 23 * * *
+        desiredReplicas: 1
+      cpu:
+        utilization: 60
+    nodeSelector: karpenter
+    commands:
+      enabled : true
+      command: ./aggregation
+      args:
+        - "-a"
+        - "http://vault-ui.vault.svc.cluster.local/"
+        - "-t"
+        - "hvs.k1C8Swd9pGr7rrZzUanAGhaV"
+        - "-p"
+        - "v1/spin_master/data/aggregation"
+    ports: 
+      - containerPort: 8090
+        name: grpc
+        protocol: TCP
+      - containerPort: 6060
+        name: pprof
+        protocol: TCP  
+    terminationMessagePath: /dev/termination-log
+    terminationMessagePolicy: File
+    workingDir: /aggregation
+    dnsPolicy: ClusterFirst
+    restartPolicy: Always
+    imageTag: v1.0.63
     limits:
       cpu: 200m
       memory: 100Mi
     requests:
       cpu: 200m
       memory: 100Mi
-    readinessProbe: {}
-    livenessProbe: {}
+    startupProbe:
+      enabled: false
+      # method options: 1. httpGet 2. grpc 3. httpGet 4. exec 5. tcpSocket
+      method: custom
+      custom: []
+      # command:
+      #   - /bin/grpc_health_probe
+      #   - -addr=:5001
+      #   - -rpc-timeout=5s
+      initialDelaySeconds: 10
+    readinessProbe:
+      enabled: true
+      method: exec
+      command:
+        - /bin/grpc_health_probe
+        - -addr=:18020
+        - -rpc-timeout=5s
+      initialDelaySeconds: 10
+    livenessProbe:
+      enabled: true
+      method: exec
+      command:
+        - /bin/grpc_health_probe
+        - -addr=:18020
+        - -rpc-timeout=5s
+      initialDelaySeconds: 10
+
     services:
       # default values (type: ClusterIP, protocol: TCP, targetPort = Port)
       - name: pprof
@@ -26,68 +107,373 @@ microservices:
         port: 18020
     ingress:
       enabled: false
+      port: ""
+
   - name: cronJob
     replicas: 1
+    scaledObject:
+      enabled: enabled
+      minReplicaCount: 1
+      maxReplicaCount: 2
+      scaleUp:
+        stabilizationWindowSeconds: 5 
+        selectPolicy: Max
+        pod:
+          podNumber: 10
+          seconds: 30
+        percent:
+          percentage: 100
+          seconds: 60
+        extraPolicies: []
+      scaleDown:
+        stabilizationWindowSeconds: 3600
+        selectPolicy: Min
+        pod:
+          podNumber: 4
+          seconds: 60
+        percent:
+          percentage: 50
+          seconds: 60
+        extraPolicies: []
+      cronOne:
+        start: 00 08 * * *
+        end: 00 19 * * *
+        desiredReplicas: 1
+      cronTwo: 
+        start: 00 19 * * *
+        end: 00 23 * * *
+        desiredReplicas: 1
+      cpu:
+        utilization: 60
+    nodeSelector: karpenter
+    commands:
+      enabled : enabled
+      command: ./cronJob
+      args:
+        - "-a"
+        - "http://vault-ui.vault.svc.cluster.local/"
+        - "-t"
+        - "hvs.k1C8Swd9pGr7rrZzUanAGhaV"
+        - "-p"
+        - "v1/spin_master/data/cronJob"
+    terminationMessagePath: /dev/termination-log
+    terminationMessagePolicy: File
+    workingDir: /cronJob
+    dnsPolicy: ClusterFirst
+    restartPolicy: Always
     annotations: []
     imageTag: v0.0.0
     limits:
-      cpu: 500m
-      memory: 500Mi
+      cpu: 200m
+      memory: 100Mi
     requests:
-      cpu: 500m
-      memory: 500Mi
-    ingress:
+      cpu: 200m
+      memory: 100Mi
+    startupProbe:
       enabled: false
-  - name: game-admin
-    replicas: 1
-    annotations: []
-    imageTag: 6ad226b3d026fc5880c609ce1cc48bf65233743a
-    limits:
-      cpu: 200m
-      memory: 100Mi
-    requests:
-      cpu: 200m
-      memory: 100Mi
-    readinessProbe: {}
-    livenessProbe: {}
-    services:
-      # default values (type: ClusterIP, protocol: TCP, targetPort = Port)
-      - name: tcp
-        port: 80
-    ingress:
+      # method options: 1. httpGet 2. grpc 3. httpGet 4. exec 5. tcpSocket
+      method: custom
+      custom: []
+      # command:
+      #   - /bin/grpc_health_probe
+      #   - -addr=:5001
+      #   - -rpc-timeout=5s
+      initialDelaySeconds: 10
+    readinessProbe:
       enabled: false
-  - name: gateway
-    replicas: 1
-    annotations: []
-    imageTag: 7de3ab973c27e8f9e4c55f684194960616bd1123
-    limits:
-      cpu: 200m
-      memory: 100Mi
-    requests:
-      cpu: 200m
-      memory: 100Mi
-    readinessProbe: {}
-    livenessProbe: {}
+    livenessProbe:
+      enabled: false
+
     services:
       # default values (type: ClusterIP, protocol: TCP, targetPort = Port)
       - name: pprof
         port: 6060
       - name: grpc
-        port: 8845
+        port: 18020
     ingress:
       enabled: false
-  - name: judan
+      port: ""
+
+  - name: game-admin
     replicas: 1
-    annotations: []
-    imageTag: 6b7265acfe69777d7f047e927eb904d6494e7ebc
+    scaledObject:
+      enabled: enabled
+      minReplicaCount: 1
+      maxReplicaCount: 2
+      scaleUp:
+        stabilizationWindowSeconds: 5 
+        selectPolicy: Max
+        pod:
+          podNumber: 10
+          seconds: 30
+        percent:
+          percentage: 100
+          seconds: 60
+        extraPolicies: []
+      scaleDown:
+        stabilizationWindowSeconds: 3600
+        selectPolicy: Min
+        pod:
+          podNumber: 4
+          seconds: 60
+        percent:
+          percentage: 50
+          seconds: 60
+        extraPolicies: []
+      cronOne:
+        start: 00 08 * * *
+        end: 00 19 * * *
+        desiredReplicas: 1
+      cronTwo: 
+        start: 00 19 * * *
+        end: 00 23 * * *
+        desiredReplicas: 1
+      cpu:
+        utilization: 60
+    nodeSelector: karpenter
+    commands:
+      enabled : false
+    ports: 
+      - containerPort: 80
+    imageTag: v1.0.21
     limits:
       cpu: 200m
       memory: 100Mi
     requests:
       cpu: 200m
       memory: 100Mi
-    readinessProbe: {}
-    livenessProbe: {}
+    startupProbe:
+      enabled: false
+      # method options: 1. httpGet 2. grpc 3. httpGet 4. exec 5. tcpSocket
+      method: custom
+      custom: []
+      # command:
+      #   - /bin/grpc_health_probe
+      #   - -addr=:5001
+      #   - -rpc-timeout=5s
+      initialDelaySeconds: 10
+    readinessProbe:
+      enabled: true
+      method: httpGet
+      path: /
+      port: 80
+      initialDelaySeconds: 5
+      periodSeconds: 10
+      failureThreshold: 3
+    livenessProbe:
+      enabled: true
+      method: httpGet
+      path: /
+      port: 80
+      initialDelaySeconds: 20
+      periodSeconds: 20
+      failureThreshold: 3
+    services:
+      # default values (type: ClusterIP, protocol: TCP, targetPort = Port)
+      - name: service
+        port: 80
+    ingress:
+      enabled: false
+      port: ""
+
+  - name: gateway
+    replicas: 1
+    scaledObject:
+      enabled: true
+      minReplicaCount: 1
+      maxReplicaCount: 2
+      scaleUp:
+        stabilizationWindowSeconds: 5 
+        selectPolicy: Max
+        pod:
+          podNumber: 10
+          seconds: 30
+        percent:
+          percentage: 100
+          seconds: 60
+        extraPolicies: []
+      scaleDown:
+        stabilizationWindowSeconds: 3600
+        selectPolicy: Min
+        pod:
+          podNumber: 4
+          seconds: 60
+        percent:
+          percentage: 50
+          seconds: 60
+        extraPolicies: []
+      cronOne:
+        start: 00 08 * * *
+        end: 00 19 * * *
+        desiredReplicas: 1
+      cronTwo: 
+        start: 00 19 * * *
+        end: 00 23 * * *
+        desiredReplicas: 1
+      cpu:
+        utilization: 60
+    nodeSelector: karpenter
+    commands:
+      enabled : true
+      command: ./gateway
+      args:
+        - "-a"
+        - "http://vault-ui.vault.svc.cluster.local/"
+        - "-t"
+        - "hvs.k1C8Swd9pGr7rrZzUanAGhaV"
+        - "-p"
+        - "v1/spin_master/data/gateway"
+    ports: 
+      - containerPort: 8090
+        name: grpc
+        protocol: TCP
+      - containerPort: 6060
+        name: pprof
+        protocol: TCP  
+    terminationMessagePath: /dev/termination-log
+    terminationMessagePolicy: File
+    workingDir: /gateway
+    dnsPolicy: ClusterFirst
+    restartPolicy: Always
+    annotations: []
+    imageTag: v1.0.50
+    limits:
+      cpu: 200m
+      memory: 100Mi
+    requests:
+      cpu: 200m
+      memory: 100Mi
+    startupProbe:
+      enabled: false
+      # method options: 1. httpGet 2. grpc 3. httpGet 4. exec 5. tcpSocket
+      method: custom
+      custom: []
+      # command:
+      #   - /bin/grpc_health_probe
+      #   - -addr=:5001
+      #   - -rpc-timeout=5s
+      initialDelaySeconds: 10
+    readinessProbe:
+      enabled: true
+      path: /ping
+      port: 8845
+      initialDelaySeconds: 10
+      periodSeconds: 30
+      successThreshold: 1
+      failureThreshold: 3
+      timeoutSeconds: 10
+    livenessProbe:
+      enabled: true
+      path: /ping
+      port: 8845
+      initialDelaySeconds: 10
+      periodSeconds: 30
+      successThreshold: 1
+      failureThreshold: 3
+      timeoutSeconds: 3
+
+    services:
+      # default values (type: ClusterIP, protocol: TCP, targetPort = Port)
+      - name: pprof
+        port: 6060
+      - name: grpc
+        port: 18020
+    ingress:
+      enabled: false
+      port: ""
+
+  - name: judan
+    replicas: 1
+    scaledObject:
+      enabled: true
+      minReplicaCount: 1
+      maxReplicaCount: 2
+      scaleUp:
+        stabilizationWindowSeconds: 5 
+        selectPolicy: Max
+        pod:
+          podNumber: 10
+          seconds: 30
+        percent:
+          percentage: 100
+          seconds: 60
+        extraPolicies: []
+      scaleDown:
+        stabilizationWindowSeconds: 3600
+        selectPolicy: Min
+        pod:
+          podNumber: 4
+          seconds: 60
+        percent:
+          percentage: 50
+          seconds: 60
+        extraPolicies: []
+      cronOne:
+        start: 00 08 * * *
+        end: 00 19 * * *
+        desiredReplicas: 1
+      cronTwo: 
+        start: 00 19 * * *
+        end: 00 23 * * *
+        desiredReplicas: 1
+      cpu:
+        utilization: 60
+    nodeSelector: karpenter
+    commands:
+      enabled : true
+      command: ./judan
+      args:
+        - "-a"
+        - "http://vault-ui.vault.svc.cluster.local/"
+        - "-t"
+        - "hvs.k1C8Swd9pGr7rrZzUanAGhaV"
+        - "-p"
+        - "v1/spin_master/data/judan"
+    ports: 
+      - containerPort: 8090
+        name: grpc
+        protocol: TCP
+      - containerPort: 6060
+        name: pprof
+        protocol: TCP
+    terminationMessagePath: /dev/termination-log
+    terminationMessagePolicy: File
+    workingDir: /judan
+    dnsPolicy: ClusterFirst
+    restartPolicy: Always
+    imageTag: v1.0.87
+    limits:
+      cpu: 200m
+      memory: 100Mi
+    requests:
+      cpu: 200m
+      memory: 100Mi
+    startupProbe:
+      enabled: false
+      # method options: 1. httpGet 2. grpc 3. httpGet 4. exec 5. tcpSocket
+      method: custom
+      custom: []
+      # command:
+      #   - /bin/grpc_health_probe
+      #   - -addr=:5001
+      #   - -rpc-timeout=5s
+      initialDelaySeconds: 10
+    readinessProbe:
+      enabled: true
+      method: exec
+      command:
+        - /bin/grpc_health_probe
+        - -addr=:8090
+        - -rpc-timeout=5s
+      initialDelaySeconds: 10
+    livenessProbe:
+      enabled: true
+      method: exec
+      command:
+        - /bin/grpc_health_probe
+        - -addr=:8090
+        - -rpc-timeout=5s
+      initialDelaySeconds: 10
     services:
       # default values (type: ClusterIP, protocol: TCP, targetPort = Port)
       - name: pprof
@@ -96,200 +482,404 @@ microservices:
         port: 8090
     ingress:
       enabled: false
-  - name: restGateway
+      port: ""
+
+  - name: pressurenoide
     replicas: 1
-    annotations: []
-    imageTag: bc3b62c4d81c58c6a41495b2a1c12c110c8fc3d4
+    scaledObject:
+      enabled: true
+      minReplicaCount: 1
+      maxReplicaCount: 2
+      scaleUp:
+        stabilizationWindowSeconds: 5 
+        selectPolicy: Max
+        pod:
+          podNumber: 10
+          seconds: 30
+        percent:
+          percentage: 100
+          seconds: 60
+        extraPolicies: []
+      scaleDown:
+        stabilizationWindowSeconds: 3600
+        selectPolicy: Min
+        pod:
+          podNumber: 4
+          seconds: 60
+        percent:
+          percentage: 50
+          seconds: 60
+        extraPolicies: []
+      cronOne:
+        start: 00 08 * * *
+        end: 00 19 * * *
+        desiredReplicas: 1
+      cronTwo: 
+        start: 00 19 * * *
+        end: 00 23 * * *
+        desiredReplicas: 1
+      cpu:
+        utilization: 60
+    nodeSelector: karpenter
+    commands:
+      enabled : true
+      command: ./pressureNode
+      args:
+        - "-a"
+        - "http://vault-ui.vault.svc.cluster.local/"
+        - "-t"
+        - "hvs.k1C8Swd9pGr7rrZzUanAGhaV"
+        - "-p"
+        - "v1/spin_master/data/pressureNode"
+    ports: 
+      - containerPort: 8090
+        name: grpc
+        protocol: TCP
+      - containerPort: 6060
+        name: pprof
+        protocol: TCP
+    terminationMessagePath: /dev/termination-log
+    terminationMessagePolicy: File
+    workingDir: /pressureNode
+    dnsPolicy: ClusterFirst
+    restartPolicy: Always
+    imageTag: v1.0.35
     limits:
       cpu: 200m
       memory: 100Mi
     requests:
       cpu: 200m
       memory: 100Mi
-    readinessProbe: {}
-    livenessProbe: {}
+    startupProbe:
+      enabled: false
+      # method options: 1. httpGet 2. grpc 3. httpGet 4. exec 5. tcpSocket
+      method: custom
+      custom: []
+      # command:
+      #   - /bin/grpc_health_probe
+      #   - -addr=:5001
+      #   - -rpc-timeout=5s
+      initialDelaySeconds: 10
+    readinessProbe:
+      enabled: true
+      method: exec
+      command:
+        - /bin/grpc_health_probe
+        - -addr=:5001
+        - -rpc-timeout=5s
+      initialDelaySeconds: 10
+    livenessProbe:
+      enabled: true
+      method: exec
+      command:
+        - /bin/grpc_health_probe
+        - -addr=:5001
+        - -rpc-timeout=5s
+      initialDelaySeconds: 10
     services:
       # default values (type: ClusterIP, protocol: TCP, targetPort = Port)
       - name: grpc
+        port: 5001
+    ingress:
+      enabled: false
+      port: ""
+
+  - name: restgateway
+    replicas: 1
+    scaledObject:
+      enabled: true
+      minReplicaCount: 1
+      maxReplicaCount: 2
+      scaleUp:
+        stabilizationWindowSeconds: 5 
+        selectPolicy: Max
+        pod:
+          podNumber: 10
+          seconds: 30
+        percent:
+          percentage: 100
+          seconds: 60
+        extraPolicies: []
+      scaleDown:
+        stabilizationWindowSeconds: 3600
+        selectPolicy: Min
+        pod:
+          podNumber: 4
+          seconds: 60
+        percent:
+          percentage: 50
+          seconds: 60
+        extraPolicies: []
+      cronOne:
+        start: 00 08 * * *
+        end: 00 19 * * *
+        desiredReplicas: 1
+      cronTwo: 
+        start: 00 19 * * *
+        end: 00 23 * * *
+        desiredReplicas: 1
+      cpu:
+        utilization: 60
+    nodeSelector: karpenter
+    commands:
+      enabled : true
+      command: ./restGateway
+      args:
+        - "-a"
+        - "http://vault-ui.vault.svc.cluster.local/"
+        - "-t"
+        - "hvs.k1C8Swd9pGr7rrZzUanAGhaV"
+        - "-p"
+        - "v1/spin_master/data/restGateway"
+    ports: 
+      - containerPort: 8080
+        name: grpc
+        protocol: TCP
+      - containerPort: 6060
+        name: pprof
+        protocol: TCP
+    terminationMessagePath: /dev/termination-log
+    terminationMessagePolicy: File
+    workingDir: /restGateway
+    dnsPolicy: ClusterFirst
+    restartPolicy: Always
+    imageTag: v1.0.26
+    limits:
+      cpu: 200m
+      memory: 100Mi
+    requests:
+      cpu: 200m
+      memory: 100Mi
+    startupProbe:
+      enabled: false
+      # method options: 1. httpGet 2. grpc 3. httpGet 4. exec 5. tcpSocket
+      method: custom
+      custom: []
+      # command:
+      #   - /bin/grpc_health_probe
+      #   - -addr=:5001
+      #   - -rpc-timeout=5s
+      initialDelaySeconds: 10
+    readinessProbe:
+      enabled: true
+      method: httpGet
+      path: /ping
+      port: 8080
+      initialDelaySeconds: 30
+      periodSeconds: 30
+      successThreshold: 1
+      failureThreshold: 3
+      timeoutSeconds: 10
+    livenessProbe:
+      enabled: true
+      method: httpGet
+      path: /ping
+      port: 8080
+      initialDelaySeconds: 30
+      periodSeconds: 30
+      successThreshold: 1
+      failureThreshold: 3
+      timeoutSeconds: 3
+    services:
+      # default values (type: ClusterIP, protocol: TCP, targetPort = Port)
+      - name: service
         port: 8080
     ingress:
       enabled: true
-      annotations:
-        alb.ingress.kubernetes.io/scheme: internet-facing
-        alb.ingress.kubernetes.io/target-type: ip
-        alb.ingress.kubernetes.io/backend-protocol: HTTP
       port: 8080
-  - name: rtpManager
+
+  - name: rtpmanager
     replicas: 1
-    annotations: []
-    imageTag: f30f1efe52b70f465cb037cad3e86f6a201df432
+    scaledObject:
+      enabled: true
+      minReplicaCount: 1
+      maxReplicaCount: 2
+      scaleUp:
+        stabilizationWindowSeconds: 5 
+        selectPolicy: Max
+        pod:
+          podNumber: 10
+          seconds: 30
+        percent:
+          percentage: 100
+          seconds: 60
+        extraPolicies: []
+      scaleDown:
+        stabilizationWindowSeconds: 3600
+        selectPolicy: Min
+        pod:
+          podNumber: 4
+          seconds: 60
+        percent:
+          percentage: 50
+          seconds: 60
+        extraPolicies: []
+      cronOne:
+        start: 00 08 * * *
+        end: 00 19 * * *
+        desiredReplicas: 1
+      cronTwo: 
+        start: 00 19 * * *
+        end: 00 23 * * *
+        desiredReplicas: 1
+      cpu:
+        utilization: 60
+    nodeSelector: karpenter
+    commands:
+      enabled : true
+      command: ./rtpManager
+      args:
+        - "-a"
+        - "http://vault-ui.vault.svc.cluster.local/"
+        - "-t"
+        - "hvs.k1C8Swd9pGr7rrZzUanAGhaV"
+        - "-p"
+        - "v1/spin_master/data/rtpManager"
+    ports: 
+      - containerPort: 9000
+        name: grpc
+        protocol: TCP
+    terminationMessagePath: /dev/termination-log
+    terminationMessagePolicy: File
+    workingDir: /rtpManager
+    dnsPolicy: ClusterFirst
+    restartPolicy: Always
+    imageTag: v1.0.12
     limits:
-      cpu: 2
-      memory: 200Mi
+      cpu: 200m
+      memory: 100Mi
     requests:
-      cpu: 2
-      memory: 200Mi
-    readinessProbe: {}
-    livenessProbe: {}
+      cpu: 200m
+      memory: 100Mi
+    startupProbe:
+      enabled: false
+      # method options: 1. httpGet 2. grpc 3. httpGet 4. exec 5. tcpSocket
+      method: custom
+      custom: []
+      # command:
+      #   - /bin/grpc_health_probe
+      #   - -addr=:5001
+      #   - -rpc-timeout=5s
+      initialDelaySeconds: 10
+    readinessProbe:
+      enabled: true
+      method: grpc
+      port: 9000
+      initialDelaySeconds: 10
+      periodSeconds: 5
+      timeoutSeconds: 30
+    livenessProbe:
+      enabled: true
+      method: grpc
+      port: 9000
+      initialDelaySeconds: 10
+      timeoutSeconds: 5
+      periodSeconds: 5
+
     services:
       # default values (type: ClusterIP, protocol: TCP, targetPort = Port)
       - name: grpc
         port: 9000
     ingress:
       enabled: false
+      port: ""
+
   - name: slot
     replicas: 1
-    annotations: []
     imageTag: a8256a2e38bb60610e72297e2ec70ce47d8d2552
+    scaledObject:
+      enabled: enabled
+      minReplicaCount: 1
+      maxReplicaCount: 2
+      scaleUp:
+        stabilizationWindowSeconds: 5 
+        selectPolicy: Max
+        pod:
+          podNumber: 10
+          seconds: 30
+        percent:
+          percentage: 100
+          seconds: 60
+        extraPolicies: []
+      scaleDown:
+        stabilizationWindowSeconds: 3600
+        selectPolicy: Min
+        pod:
+          podNumber: 4
+          seconds: 60
+        percent:
+          percentage: 50
+          seconds: 60
+        extraPolicies: []
+      cronOne:
+        start: 00 08 * * *
+        end: 00 19 * * *
+        desiredReplicas: 1
+      cronTwo: 
+        start: 00 19 * * *
+        end: 00 23 * * *
+        desiredReplicas: 1
+      cpu:
+        utilization: 60
+    nodeSelector: karpenter
+    commands:
+      enabled : true
+      command: slot
+      args:
+        - crystal
+        - "-a"
+        - "http://vault-ui.vault.svc.cluster.local/"
+        - "-t"
+        - "hvs.k1C8Swd9pGr7rrZzUanAGhaV"
+        - "-p"
+        - "v1/spin_master/data/slot/slot001"
+    ports: 
+      - containerPort: 8090
+        name: grpc
+        protocol: TCP
+      - containerPort: 6060
+        name: pprof
+        protocol: TCP
+    terminationMessagePath: /dev/termination-log
+    terminationMessagePolicy: File
+    workingDir: /slot
+    dnsPolicy: ClusterFirst
+    restartPolicy: Always
     limits:
-      cpu: 200m
-      memory: 100Mi
+      cpu: 250m
+      memory: 500Mi
     requests:
-      cpu: 200m
-      memory: 100Mi
-    readinessProbe: {}
-    livenessProbe: {}
+      cpu: 20m
+      memory: 50Mi
+    startupProbe:
+      enabled: false
+      # method options: 1. httpGet 2. grpc 3. httpGet 4. exec 5. tcpSocket
+      method: custom
+      custom: []
+      # command:
+      #   - /bin/grpc_health_probe
+      #   - -addr=:5001
+      #   - -rpc-timeout=5s
+      initialDelaySeconds: 10
+    readinessProbe:
+      enabled: true
+      method: grpc
+      port: 9001
+      initialDelaySeconds: 10
+      periodSeconds: 5
+      timeoutSeconds: 30
+    livenessProbe:
+      enabled: true
+      method: grpc
+      port: 9001
+      initialDelaySeconds: 10
+      periodSeconds: 5
+      timeoutSeconds: 5
+
     services:
       # default values (type: ClusterIP, protocol: TCP, targetPort = Port)
       - name: grpc
         port: 9001
     ingress:
       enabled: false
-
-# argocd:
-#   - name: pulsar-test
-#     namespace: pulsar-test
-#     repoUrl: https://github.com/apache/pulsar-helm-chart.git
-#     targetRevision: master
-#     path: charts/pulsar
-#     helm: 
-#       valueFiles:
-#         - values.yaml
-#       values: |
-        # namespace: pulsar
-        # namespaceCreate: true
-        
-        # # Global nodeSelector for all components
-        # nodeSelector:
-        #   role: pulsar
-
-        # # Zookeeper configuration
-        # zookeeper:
-        #   nodeSelector:
-        #     role: pulsar
-        #   replicaCount: 3
-        #   resources:
-        #     requests:
-        #       memory: "512Mi"
-        #       cpu: "0.3"
-        #     limits:
-        #       memory: "1Gi"
-        #       cpu: "1"
-
-        # # Bookkeeper configuration
-        # bookkeeper:
-        #   nodeSelector:
-        #     role: pulsar
-        #   replicaCount: 3
-        #   resources:
-        #     requests:
-        #       memory: "512Mi"
-        #       cpu: "0.3"
-        #     limits:
-        #       memory: "1Gi"
-        #       cpu: "1"
-
-        # # Broker configuration
-        # broker:
-        #   nodeSelector:
-        #     role: pulsar
-        #   replicaCount: 3
-        #   resources:
-        #     requests:
-        #       memory: "512Mi"
-        #       cpu: "0.3"
-        #     limits:
-        #       memory: "1Gi"
-        #       cpu: "1"
-
-        # # Proxy configuration
-        # proxy:
-        #   nodeSelector:
-        #     role: pulsar
-        #   replicaCount: 3
-        #   resources:
-        #     requests:
-        #       memory: "512Mi"
-        #       cpu: "0.3"
-        #     limits:
-        #       memory: "1Gi"
-        #       cpu: "1"
-
-        # # Function worker configuration
-        # functions:
-        #   nodeSelector:
-        #     role: pulsar
-        #   resources:
-        #     requests:
-        #       memory: "512Mi"
-        #       cpu: "0.3"
-        #     limits:
-        #       memory: "1Gi"
-        #       cpu: "1"
-
-        # # Monitoring stack configuration
-        # kube-prometheus-stack:
-        #   enabled: false
-        #   prometheusOperator:
-        #     nodeSelector:
-        #       role: pulsar
-        #   prometheus:
-        #     enabled: false
-        #   grafana:
-        #     enabled: false # Disable Grafana
-        #   alertmanager:
-        #     enabled: false # Disable Alertmanager
-        #   prometheus-node-exporter:
-        #     enabled: false
-        #   nodeExporter:
-        #     enabled: false
-
-        # # Standalone node-exporter disabled
-        # prometheus-node-exporter:
-        #   enabled: false
-
-        # # Additional components
-        # autorecovery:
-        #   nodeSelector:
-        #     role: pulsar
-        #   resources:
-        #     requests:
-        #       memory: "256Mi"
-        #       cpu: "0.1"
-        #     limits:
-        #       memory: "512Mi"
-        #       cpu: "0.3"
-        
-        # bastion:
-        #   nodeSelector:
-        #     role: pulsar
-        #   resources:
-        #     requests:
-        #       memory: "256Mi"
-        #       cpu: "0.1"
-        #     limits:
-        #       memory: "512Mi"
-        #       cpu: "0.3"
-
-        # pulsar_manager:
-        #   nodeSelector:
-        #     role: pulsar
-        #   resources:
-        #     requests:
-        #       memory: "256Mi"
-        #       cpu: "0.1"
-        #     limits:
-        #       memory: "512Mi"
-        #       cpu: "0.3"
-
-# - name: apisix
+      port: ""

@@ -8,11 +8,56 @@ resources:
     cpu: {{ .requests.cpu | default "1" | quote }}
     memory: {{ .requests.memory | default "1" | quote }}
 {{- end }}
-{{/* Define a default command entry for microservices */}}
-{{- define "containerCommand" -}}
-- "-a"
-- "http://vault-ui.vault.svc.cluster.local/"
-- "-t"
-- "hvs.k1C8Swd9pGr7rrZzUanAGhaV"
-- "-p"
+{{/*   Generic probe template for startupProbe, readinessProbe, and livenessProbe
+  Usage: {{ include "probe" (dict "probe" .startupProbe) | nindent 2 }} */}}
+{{- define "probe" -}}
+  {{ .type }}:
+    {{- if eq .method "tcpSocket" }}
+    tcpSocket:
+      {{- with .port }}
+      port:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+    {{- else if eq .method "httpGet" }}
+    httpGet:
+      {{- with .path }}
+      path: 
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .port }}
+      port:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+    {{- else if eq .method "grpc" }}
+    grpc:
+      {{- with .port }}
+      port:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+    {{- else if eq .method "exec" }}
+    exec:
+      command: 
+      {{- with .command }}
+        {{- . }}
+      {{- end }}
+    {{- else }}
+      {{- with .custom }}
+        {{- toYaml . | nindent 4 }}
+      {{- end }}
+    {{- end }}
+    {{- with .initialDelaySeconds }}
+    initialDelaySeconds: {{- toYaml . | nindent 6 | default 30 }}
+    {{- end }}
+    {{- with .periodSeconds }}
+    periodSeconds: {{- toYaml . | nindent 6 | default 30 }}
+    {{- end }}
+    {{- with .successThreshold }}
+    successThreshold: {{- toYaml . | nindent 6 | default 1 }}
+    {{- end }}
+    {{- with .failureThreshold }}
+    failureThreshold: {{- toYaml . | nindent 6 | default 3 }}
+    {{- end }}
+    {{- with .timeoutSeconds }}
+    timeoutSeconds: {{- toYaml . | nindent 6 | default 3 }}
+    {{- end }}
 {{- end }}

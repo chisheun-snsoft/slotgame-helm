@@ -9,7 +9,9 @@ metadata:
   namespace: {{ $.Values.global.namespace }}
 spec:
   progressDeadlineSeconds: 600
+  {{- if not .scaledObject.enabled }}
   replicas: {{ .replica }}
+  {{- end }}
   revisionHistoryLimit: 3
   selector:
     matchLabels: {{ $labels | toYaml | nindent 6 }}
@@ -28,142 +30,65 @@ spec:
           {{- toYaml .annotations | nindent 10}}
         {{- end }}
     spec:
-      nodeSelector:
-        role: karpenter
+      nodeSelector: 
+        role: {{ .nodeSelector }}
       containers:
         - name: {{ $microservice.name | lower }}
           image: "{{ $.Values.global.ecr }}/{{ if eq $microservice.name "cronJob" }}{{ $microservice.name | lower }}{{ else }}dev-{{ $microservice.name | lower }}{{ end }}:{{ .imageTag }}"
           imagePullPolicy: Always
-        {{- if ne $microservice.name "game-admin" }}
-          command: ["./{{ $microservice.name }}"]
-          args:
-          {{- if eq $microservice.name "slot" }}
-            - crystal
-            {{- include "containerCommand" . | nindent 12 }}
-            - "v1/spin_master/data/{{ $microservice.name }}/slot001"
-          {{- else }}
-            {{- include "containerCommand" . | nindent 12 }}
-            - "v1/spin_master/data/{{ $microservice.name }}"
+          {{- if .commands.enabled }}
+          commands: {{ .commands.command }}
+          {{- with .commands.args }}
+          args: 
+            {{- toYaml . | nindent 12 }}
           {{- end }}
-        {{- end }}
-        {{- range .services }}
-        {{- if contains "grpc" .name }}
-          ports:
-            - containerPort: {{ .port }}
-              name: {{ .name }}
-              protocol: TCP
-          {{- if or (eq $microservice.name "aggregation") (eq $microservice.name "pressurenode") (eq $microservice.name "judan") }}
-          livenessProbe: 
-            exec:
-              command:
-                - /bin/grpc_health_probe
-                - -addr=:{{ .port }}
-                - -rpc-timeout=5s
-            initialDelaySeconds: {{ $microservice.livenessProbe.initialDelaySeconds | default 10 }}
-          readinessProbe: 
-            exec:
-              command:
-                - /bin/grpc_health_probe
-                - -addr=:{{ .port }}
-                - -rpc-timeout=5s
-            initialDelaySeconds: {{ $microservice.readinessProbe.initialDelaySeconds | default 10 }}
-          {{- else if or (eq $microservice.name "rtpmanager") (eq $microservice.name "slot")}}
-          readinessProbe:
-            grpc:
-              port: {{ .port }}
-            initialDelaySeconds: {{ $microservice.readinessProbe.initialDelaySeconds | default 10 }}
-            periodSeconds: {{ $microservice.readinessProbe.periodSeconds | default 5 }}
-            timeoutSeconds: {{ $microservice.readinessProbe.timeoutSeconds | default 30 }}
-          livenessProbe:
-            grpc:
-              port: {{ .port }}
-            initialDelaySeconds: {{ $microservice.livenessProbe.initialDelaySeconds | default 10 }}
-            timeoutSeconds: {{ $microservice.livenessProbe.initialDelaySeconds | default 5 }}
-            periodSeconds: {{ $microservice.livenessProbe.periodSeconds | default 5 }}
-          {{- else if eq $microservice.name "pressuremaster" }}
-          readinessProbe:
-            httpGet:
-              path: /
-              port: {{ .port }}
-            initialDelaySeconds: {{ $microservice.readinessProbe.initialDelaySeconds | default 10}}
-            periodSeconds: {{ $microservice.readinessProbe.periodSeconds | default 5 }}
-            timeoutSeconds: {{ $microservice.readinessProbe.timeoutSeconds | default 30 }}
-          livenessProbe:
-            httpGet:
-              path: /
-              port: {{ .port }}
-            initialDelaySeconds: {{ $microservice.livenessProbe.initialDelaySeconds | default 10}}
-            timeoutSeconds: {{ $microservice.livenessProbe.periodSeconds | default 5 }}
-            periodSeconds: {{ $microservice.livenessProbe.timeoutSeconds | default 5 }}
-          {{- else if eq $microservice.name "restgateway" }}
-          readinessProbe: #http
-            httpGet:
-              path: /ping
-              port: {{ .port }}
-            initialDelaySeconds: {{ $microservice.readinessProbe.initialDelaySeconds | default 30 }}
-            periodSeconds: {{ $microservice.readinessProbe.periodSeconds | default 30 }}
-            successThreshold: {{ $microservice.readinessProbe.successThreshold | default 1 }}
-            failureThreshold: {{ $microservice.readinessProbe.failureThreshold | default 3 }}
-            timeoutSeconds: {{ $microservice.readinessProbe.timeoutSeconds | default 10 }}
-          livenessProbe: #http
-            httpGet:
-              path: /ping
-              port: {{ .port }}
-            initialDelaySeconds: {{ $microservice.livenessProbe.initialDelaySeconds | default 30 }}
-            periodSeconds: {{ $microservice.livenessProbe.periodSeconds | default 30 }}
-            successThreshold: {{ $microservice.livenessProbe.successThreshold | default 1 }}
-            failureThreshold: {{ $microservice.livenessProbe.failureThreshold | default 3 }}
-            timeoutSeconds: {{ $microservice.livenessProbe.timeoutSeconds | default 3 }}
           {{- end }}
-        {{- else }}
-          ports:
-            - containerPort: {{ .port }}
-              name: {{ .name }}
-          {{- if eq $microservice.name "game-admin" }}
-          readinessProbe:
-            httpGet:
-              path: /
-              port: {{ .port }}
-            initialDelaySeconds: {{ $microservice.readinessProbe.initialDelaySeconds | default 5 }}
-            periodSeconds: {{ $microservice.readinessProbe.periodSeconds | default 10 }}
-            failureThreshold: {{ $microservice.readinessProbe.failureThreshold | default 3 }}
-          livenessProbe:
-            httpGet:
-              path: /
-              port: {{ .port }}
-            initialDelaySeconds: {{ $microservice.livenessProbe.initialDelaySeconds | default 20 }}
-            periodSeconds: {{ $microservice.livenessProbe.periodSeconds | default 20 }}
-            failureThreshold: {{ $microservice.livenessProbe.failureThreshold | default 3 }}
-          {{- else if eq $microservice.name "gateway" }}
-          readinessProbe: #http
-            httpGet:
-              path: /ping
-              port: 8845
-            initialDelaySeconds: {{ $microservice.readinessProbe.initialDelaySeconds | default 10 }}
-            periodSeconds: {{ $microservice.readinessProbe.periodSeconds | default 30 }}
-            successThreshold: {{ $microservice.readinessProbe.successThreshold | default 1 }}
-            failureThreshold: {{ $microservice.readinessProbe.failureThreshold | default 3 }}
-            timeoutSeconds: {{ $microservice.readinessProbe.timeoutSeconds | default 10 }}
-          livenessProbe: #http
-            httpGet:
-              path: /ping
-              port: 8845
-            initialDelaySeconds: {{ $microservice.livenessProbe.initialDelaySeconds | default 10 }}
-            periodSeconds: {{ $microservice.livenessProbe.periodSeconds | default 30 }}
-            successThreshold: {{ $microservice.livenessProbe.successThreshold | default 1 }}
-            failureThreshold: {{ $microservice.livenessProbe.failureThreshold | default 3 }}
-            timeoutSeconds: {{ $microservice.livenessProbe.timeoutSeconds | default 3 }}
+          {{- with .ports }}
+          ports: {{- toYaml . | nindent 14 }}
           {{- end }}
-        {{- end }}
-        {{- end }}
+          {{- if .startupProbe.enabled }}
+          {{- include "probe" (dict "type" "startupProbe" "enabled" .startupProbe.enabled "method" .startupProbe.method "port" .startupProbe.port "path" .startupProbe.path "command" .startupProbe.command "custom" .startupProbe.custom "initialDelaySeconds" .startupProbe.initialDelaySeconds "periodSeconds" .startupProbe.periodSeconds "successThreshold" .startupProbe.successThreshold "failureThreshold" .startupProbe.failureThreshold "timeoutSeconds" .startupProbe.timeoutSeconds ) | nindent 10 }}
+          {{- end }}
+          {{- if .readinessProbe.enabled }}
+          {{- include "probe" (dict "type" "readinessProbe" "enabled" .readinessProbe.enabled "method" .readinessProbe.method "port" .readinessProbe.port "path" .readinessProbe.path "command" .readinessProbe.command "custom" .readinessProbe.custom "initialDelaySeconds" .readinessProbe.initialDelaySeconds "periodSeconds" .readinessProbe.periodSeconds "successThreshold" .readinessProbe.successThreshold "failureThreshold" .readinessProbe.failureThreshold "timeoutSeconds" .readinessProbe.timeoutSeconds ) | nindent 10 }}
+          {{- end }}
+          {{- if .livenessProbe.enabled }}
+          {{- include "probe" (dict "type" "livenessProbe" "enabled" .livenessProbe.enabled "method" .livenessProbe.method "port" .livenessProbe.port "path" .livenessProbe.path "command" .livenessProbe.command "custom" .livenessProbe.custom "initialDelaySeconds" .livenessProbe.initialDelaySeconds "periodSeconds" .livenessProbe.periodSeconds "successThreshold" .livenessProbe.successThreshold "failureThreshold" .livenessProbe.failureThreshold "timeoutSeconds" .livenessProbe.timeoutSeconds ) | nindent 10 }}
+          {{- end }}
           {{- include "resourceRequest" . | nindent 10 }}
-    {{- if ne $microservice.name "game-admin" }}
-          terminationMessagePath: /dev/termination-log
-          terminationMessagePolicy: File
-          workingDir: /{{ $microservice.name }}
-      dnsPolicy: ClusterFirst
-      restartPolicy: Always
-    {{- end }}
-      terminationGracePeriodSeconds: 15
+          {{- with .volumeMounts }}
+          volumeMounts:
+            {{- toYaml . | nindent 10 }}
+          {{- end }}
+          env:
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: TZ
+              value: "Asia/Singapore"
+          {{- with .env }}
+            {{- toYaml . | nindent 10 }}
+          {{- end }}
+          {{- with .terminationMessagePath }}
+          terminationMessagePath: {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .terminationMessagePolicy }}
+          terminationMessagePolicy: {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .workingDir }}
+          workingDir: {{- toYaml . | nindent 12 }}
+          {{- end }}
+      {{- with .dnsPolicy }}
+      dnsPolicy: {{- toYaml . | nindent 12 }}
+      {{- end }}
+      {{- with .restartPolicy }}
+      restartPolicy: {{- toYaml . | nindent 12 }}
+      {{- end }}
+      terminationGracePeriodSeconds: {{ .terminationGracePeriodSeconds | default 15}}
+      {{- with .volumes }}
+      volumes:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
 ---
 {{- end }}
