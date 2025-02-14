@@ -80,14 +80,14 @@ microservices:
       initialDelaySeconds: 10
     readinessProbe:
       enabled: true
-      method: exec
+      method: false
       command:
         - /bin/grpc_health_probe
         - -addr=:18020
         - -rpc-timeout=5s
       initialDelaySeconds: 10
     livenessProbe:
-      enabled: true
+      enabled: false
       method: exec
       command:
         - /bin/grpc_health_probe
@@ -360,7 +360,7 @@ microservices:
       custom: []
       initialDelaySeconds: 10
     readinessProbe:
-      enabled: true
+      enabled: false
       method: exec
       command:
         - /bin/grpc_health_probe
@@ -368,7 +368,7 @@ microservices:
         - -rpc-timeout=5s
       initialDelaySeconds: 10
     livenessProbe:
-      enabled: true
+      enabled: false
       method: exec
       command:
         - /bin/grpc_health_probe
