@@ -65,7 +65,7 @@ microservices:
     workingDir: /aggregation
     dnsPolicy: ClusterFirst
     restartPolicy: Always
-    imageTag: v1.0.63
+    imageTag: 3f32dc23e637a67577deccea4bc55e7700bdf38a
     limits:
       cpu: 200m
       memory: 100Mi
@@ -235,7 +235,7 @@ microservices:
       enabled : false
     ports: 
       - containerPort: 80
-    imageTag: v1.0.21
+    imageTag: c59cae8d84ce5f057bf48ac16827b46e63d54b58
     limits:
       cpu: 200m
       memory: 100Mi
@@ -336,7 +336,7 @@ microservices:
     dnsPolicy: ClusterFirst
     restartPolicy: Always
     annotations: []
-    imageTag: v1.0.50
+    imageTag: 7de3ab973c27e8f9e4c55f684194960616bd1123
     limits:
       cpu: 200m
       memory: 100Mi
@@ -441,7 +441,7 @@ microservices:
     workingDir: /judan
     dnsPolicy: ClusterFirst
     restartPolicy: Always
-    imageTag: v1.0.87
+    imageTag: 6b7265acfe69777d7f047e927eb904d6494e7ebc
     limits:
       cpu: 200m
       memory: 100Mi
@@ -484,105 +484,105 @@ microservices:
       enabled: false
       port: ""
 
-  - name: pressurenoide
-    replicas: 1
-    scaledObject:
-      enabled: true
-      minReplicaCount: 1
-      maxReplicaCount: 2
-      scaleUp:
-        stabilizationWindowSeconds: 5 
-        selectPolicy: Max
-        pod:
-          podNumber: 10
-          seconds: 30
-        percent:
-          percentage: 100
-          seconds: 60
-        extraPolicies: []
-      scaleDown:
-        stabilizationWindowSeconds: 3600
-        selectPolicy: Min
-        pod:
-          podNumber: 4
-          seconds: 60
-        percent:
-          percentage: 50
-          seconds: 60
-        extraPolicies: []
-      cronOne:
-        start: 00 08 * * *
-        end: 00 19 * * *
-        desiredReplicas: 1
-      cronTwo: 
-        start: 00 19 * * *
-        end: 00 23 * * *
-        desiredReplicas: 1
-      cpu:
-        utilization: 60
-    nodeSelector: karpenter
-    commands:
-      enabled : true
-      command: ./pressureNode
-      args:
-        - "-a"
-        - "http://vault-ui.vault.svc.cluster.local/"
-        - "-t"
-        - "hvs.k1C8Swd9pGr7rrZzUanAGhaV"
-        - "-p"
-        - "v1/spin_master/data/pressureNode"
-    ports: 
-      - containerPort: 8090
-        name: grpc
-        protocol: TCP
-      - containerPort: 6060
-        name: pprof
-        protocol: TCP
-    terminationMessagePath: /dev/termination-log
-    terminationMessagePolicy: File
-    workingDir: /pressureNode
-    dnsPolicy: ClusterFirst
-    restartPolicy: Always
-    imageTag: v1.0.35
-    limits:
-      cpu: 200m
-      memory: 100Mi
-    requests:
-      cpu: 200m
-      memory: 100Mi
-    startupProbe:
-      enabled: false
-      # method options: 1. httpGet 2. grpc 3. httpGet 4. exec 5. tcpSocket
-      method: custom
-      custom: []
-      # command:
-      #   - /bin/grpc_health_probe
-      #   - -addr=:5001
-      #   - -rpc-timeout=5s
-      initialDelaySeconds: 10
-    readinessProbe:
-      enabled: true
-      method: exec
-      command:
-        - /bin/grpc_health_probe
-        - -addr=:5001
-        - -rpc-timeout=5s
-      initialDelaySeconds: 10
-    livenessProbe:
-      enabled: true
-      method: exec
-      command:
-        - /bin/grpc_health_probe
-        - -addr=:5001
-        - -rpc-timeout=5s
-      initialDelaySeconds: 10
-    services:
-      # default values (type: ClusterIP, protocol: TCP, targetPort = Port)
-      - name: grpc
-        port: 5001
-    ingress:
-      enabled: false
-      port: ""
+  # - name: pressurenoide
+  #   replicas: 1
+  #   scaledObject:
+  #     enabled: true
+  #     minReplicaCount: 1
+  #     maxReplicaCount: 2
+  #     scaleUp:
+  #       stabilizationWindowSeconds: 5 
+  #       selectPolicy: Max
+  #       pod:
+  #         podNumber: 10
+  #         seconds: 30
+  #       percent:
+  #         percentage: 100
+  #         seconds: 60
+  #       extraPolicies: []
+  #     scaleDown:
+  #       stabilizationWindowSeconds: 3600
+  #       selectPolicy: Min
+  #       pod:
+  #         podNumber: 4
+  #         seconds: 60
+  #       percent:
+  #         percentage: 50
+  #         seconds: 60
+  #       extraPolicies: []
+  #     cronOne:
+  #       start: 00 08 * * *
+  #       end: 00 19 * * *
+  #       desiredReplicas: 1
+  #     cronTwo: 
+  #       start: 00 19 * * *
+  #       end: 00 23 * * *
+  #       desiredReplicas: 1
+  #     cpu:
+  #       utilization: 60
+  #   nodeSelector: karpenter
+  #   commands:
+  #     enabled : true
+  #     command: ./pressureNode
+  #     args:
+  #       - "-a"
+  #       - "http://vault-ui.vault.svc.cluster.local/"
+  #       - "-t"
+  #       - "hvs.k1C8Swd9pGr7rrZzUanAGhaV"
+  #       - "-p"
+  #       - "v1/spin_master/data/pressureNode"
+  #   ports: 
+  #     - containerPort: 8090
+  #       name: grpc
+  #       protocol: TCP
+  #     - containerPort: 6060
+  #       name: pprof
+  #       protocol: TCP
+  #   terminationMessagePath: /dev/termination-log
+  #   terminationMessagePolicy: File
+  #   workingDir: /pressureNode
+  #   dnsPolicy: ClusterFirst
+  #   restartPolicy: Always
+  #   imageTag: v1.0.35
+  #   limits:
+  #     cpu: 200m
+  #     memory: 100Mi
+  #   requests:
+  #     cpu: 200m
+  #     memory: 100Mi
+  #   startupProbe:
+  #     enabled: false
+  #     # method options: 1. httpGet 2. grpc 3. httpGet 4. exec 5. tcpSocket
+  #     method: custom
+  #     custom: []
+  #     # command:
+  #     #   - /bin/grpc_health_probe
+  #     #   - -addr=:5001
+  #     #   - -rpc-timeout=5s
+  #     initialDelaySeconds: 10
+  #   readinessProbe:
+  #     enabled: true
+  #     method: exec
+  #     command:
+  #       - /bin/grpc_health_probe
+  #       - -addr=:5001
+  #       - -rpc-timeout=5s
+  #     initialDelaySeconds: 10
+  #   livenessProbe:
+  #     enabled: true
+  #     method: exec
+  #     command:
+  #       - /bin/grpc_health_probe
+  #       - -addr=:5001
+  #       - -rpc-timeout=5s
+  #     initialDelaySeconds: 10
+  #   services:
+  #     # default values (type: ClusterIP, protocol: TCP, targetPort = Port)
+  #     - name: grpc
+  #       port: 5001
+  #   ingress:
+  #     enabled: false
+  #     port: ""
 
   - name: restgateway
     replicas: 1
@@ -643,7 +643,7 @@ microservices:
     workingDir: /restGateway
     dnsPolicy: ClusterFirst
     restartPolicy: Always
-    imageTag: v1.0.26
+    imageTag: bc3b62c4d81c58c6a41495b2a1c12c110c8fc3d4
     limits:
       cpu: 200m
       memory: 100Mi
@@ -744,7 +744,7 @@ microservices:
     workingDir: /rtpManager
     dnsPolicy: ClusterFirst
     restartPolicy: Always
-    imageTag: v1.0.12
+    imageTag: f30f1efe52b70f465cb037cad3e86f6a201df432
     limits:
       cpu: 200m
       memory: 100Mi
@@ -786,7 +786,7 @@ microservices:
 
   - name: slot
     replicas: 1
-    imageTag: v1.0.64
+    imageTag: a8256a2e38bb60610e72297e2ec70ce47d8d2552
     scaledObject:
       enabled: enabled
       minReplicaCount: 1
