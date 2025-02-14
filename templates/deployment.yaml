@@ -34,7 +34,7 @@ spec:
         role: {{ .nodeSelector }}
       containers:
         - name: {{ $microservice.name | lower }}
-          image: "{{ $.Values.global.ecr }}/{{ $microservice.name | lower }}:{{ .imageTag }}"
+          image: "{{ $.Values.global.ecr }}/{{ $.Values.global.env }}-{{ $microservice.name | lower }}:{{ .imageTag }}"
           imagePullPolicy: Always
           {{- if .commands.enabled }}
           commands: {{ .commands.command }}
