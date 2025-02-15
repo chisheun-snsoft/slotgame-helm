@@ -39,7 +39,7 @@ spec:
           {{- if .commands.enabled }}
           {{- with .commands.command }}
           commands:  
-            {{- toYaml . | nindent 8 }}
+            {{- toYaml . | nindent 12 }}
           {{- end }}
           {{- with .commands.args }}
           args: 
