@@ -12,13 +12,13 @@ resources:
   Usage: {{ include "probe" (dict "probe" .startupProbe) | nindent 2 }} */}}
 {{- define "probe" -}}
   {{ .type }}:
-    {{- if eq .method "tcpSocket" }}
+    {{- if eq (.method | toString) "tcpSocket" }}
     tcpSocket:
       {{- with .port }}
       port:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-    {{- else if eq .method "httpGet" }}
+    {{- else if eq (.method | toString) "httpGet" }}
     httpGet:
       {{- with .path }}
       path: 
@@ -28,13 +28,13 @@ resources:
       port:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-    {{- else if eq .method "grpc" }}
+    {{- else if eq (.method | toString) "grpc" }}
     grpc:
       {{- with .port }}
       port:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-    {{- else if eq .method "exec" }}
+    {{- else if eq (.method | toString) "exec" }}
     exec:
       command: 
       {{- with .command }}
