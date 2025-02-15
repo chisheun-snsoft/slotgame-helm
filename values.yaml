@@ -45,8 +45,7 @@ microservices:
     nodeSelector: karpenter
     commands:
       enabled : true
-      command: 
-       - ./aggregation
+      command: ["./aggregation"]
       args:
         - "-a"
         - "http://vault-ui.vault.svc.cluster.local/"
