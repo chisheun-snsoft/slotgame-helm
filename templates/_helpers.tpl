@@ -38,7 +38,7 @@ resources:
     exec:
       command: 
       {{- with .command }}
-        {{- . | toYaml | nindent 4 }}
+        {{- toYaml . | nindent 4 }}
       {{- end }}
     {{- else }}
       {{- with .custom }}
