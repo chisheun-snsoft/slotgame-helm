@@ -80,7 +80,7 @@ microservices:
       initialDelaySeconds: 10
     readinessProbe:
       enabled: true
-      method: false
+      method: exec
       command:
         - /bin/grpc_health_probe
         - -addr=:18020
