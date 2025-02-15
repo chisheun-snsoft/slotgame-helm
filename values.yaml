@@ -44,7 +44,7 @@ microservices:
         utilization: 60
     nodeSelector: karpenter
     commands:
-      enabled : false
+      enabled : true
       command: ["./aggregation"]
       args:
         - "-a"
