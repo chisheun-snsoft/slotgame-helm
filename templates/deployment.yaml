@@ -44,7 +44,6 @@ spec:
           args: 
             {{- toYaml . | nindent 12 }}
           {{- end }}
-          {{- end }}
           {{- with .ports }}
           ports: {{- toYaml . | nindent 14 }}
           {{- end }}
