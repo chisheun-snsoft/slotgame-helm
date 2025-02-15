@@ -37,7 +37,7 @@ resources:
     {{- else if eq (.method | toString) "exec" }}
     exec:
       command: 
-      {{- with .command }}
+      {{- with .command | toYaml | nindent 4 }}
         {{- . }}
       {{- end }}
     {{- else }}
