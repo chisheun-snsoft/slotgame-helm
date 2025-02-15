@@ -36,7 +36,6 @@ spec:
         - name: {{ $microservice.name | lower }}
           image: "{{ $.Values.global.ecr }}/{{ $.Values.global.env }}-{{ $microservice.name | lower }}:{{ .imageTag }}"
           imagePullPolicy: Always
-          {{- if .commands.enabled }}
           {{- with .commands.command }}
           commands:  
             {{- toYaml . | nindent 12 }}
